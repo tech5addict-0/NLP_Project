@@ -1,0 +1,47 @@
+Meeting interview:
+Rescheduling is pending
+
+----------------------
+Actions we need to do:
+----------------------
+Read papers:
+ Papers are divided over all of us. Read the one(s) you are assigned and make notes on important highlights etc
+ Numbers as reference in the proposal
+ 1 PRIYA
+ 4 PRIYA
+ 5 ZHANG
+ 6 ZHANG
+ 7 NATHAN
+ 8 NATHAN
+ 9 MARJOLEIN
+ 10 MARJOLEIN
+ 11 MARJOLEIN
+
+Implementation:
+ Feature extraction
+ - 2 types
+   -BoW MARJOLEIN
+   -Q MARJOLEIN
+   -RootDist ZHANG
+   -Neg ZHANG
+   -PPDB PRIYA
+   -SVO PRIYA 
+   -word2vec PRIYA
+ 
+ Classification
+ - 3 classifiers
+ Ablation analysis
+ - 1 analysis
+ 
+ Extra:
+ Data preprocessing
+ Balancing of the set/new data
+ More features (sentiment based)
+ More classifiers
+
+Experiments:
+NATHAN Data ready --> Format into 1 readable set, and create a train and test set.
+ 
+
+Report writing:
+ ASAP (take notes while doing stuff to be able to write it down later)
