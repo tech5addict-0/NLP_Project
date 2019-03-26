@@ -167,20 +167,20 @@ stopWordSet = set(nltk.corpus.stopwords.words('english'))
 
 
 # Writing part
-# data = createDictFromDirectory("emergent/")
-# with open('dataset.json',"w+") as flux:
-#     json.dump(data,flux)
+#data = createDictFromDirectory("emergent/")
+#with open('datasets/dataset.json',"w+") as flux:
+#    json.dump(data,flux)
 
 
-# Writing the preprocessed dataset
-# data = createDictFromDirectory("emergent/")
-# data = preprocessDataset(data)
-# with open('datasetPreproc.json',"w+") as flux:
-#     json.dump(data,flux)
+#Writing the preprocessed dataset
+#data = createDictFromDirectory("emergent/")
+#data = preprocessDataset(data)
+#with open('datasets/datasetPreproc.json',"w+") as flux:
+#    json.dump(data,flux)
 
 
-We read the data
-with open('dataset.json','r') as json_file:  
+#We read the data
+with open('datasets/dataset.json','r') as json_file:  
    data = json.load(json_file)
 
 # test stuff
@@ -191,7 +191,7 @@ print(len(train))
 print(len(val))
 print(len(test))
 
-preprocessDataset(data)
+#preprocessDataset(data)
 
 
 
