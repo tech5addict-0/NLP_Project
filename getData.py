@@ -24,8 +24,6 @@ def getAllCsvFileName(directory):
     return result
 
 
-#print(getAllCsvFileName("emergent/"))
-
 
 def createDictFromDirectory(directory):
     ''' Create a dictionnary of all the data that will encompas every fold in the directory.
