@@ -22,9 +22,9 @@ class FeatureExtraction():
         maxscore = 10
         normalize_constant = min(len(claim.split(), headline.split()))
         word_pairs = [(c,h) for c in sent_tokenize(claim) for h in sent_tokenize(headline)]
-        #edges = ((i,j,kuhn_munkres_score(i,j)) for (i,j) in enumerate(word_pairs))
+        edges = ((i,j,kuhn_munkres_score(i,j)) for (i,j) in enumerate(word_pairs))
         alignment_graph = nx.Graph()
-        #alignment_graph.add_edges_from(edges)
+        alignment_graph.add_edges_from(edges)
         return
 
 
