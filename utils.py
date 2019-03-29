@@ -1,9 +1,12 @@
 import numpy as np
 import re
-from logger import log
+from logger import Logger
 
 
-def BoW (claim, headline):
+def __init__(self, logger):
+    self.logger = logger
+
+def BoW (self, claim, headline):
 
     wordsClaim = re.sub("[^\w]", " ", claim).split()
     wordsClaim_cleaned = [w.lower() for w in wordsClaim]
@@ -19,14 +22,14 @@ def BoW (claim, headline):
             if hw == cw:
                 bag[i] += 1
 
-    log("Feature Bag of Words completed.")
+    self.logger.log("Feature Bag of Words completed.")
     return np.array(bag)
 
 
-def Q (claim, headline):
+def Q (self, claim, headline):
     if "?" in headline:
-        log("Feature Question completed.")
+        self.logger.log("Feature Question completed.")
         return 1
     else:
-        log("Feature Question completed.")
+        self.logger.log("Feature Question completed.")
         return 0
