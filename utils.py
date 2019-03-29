@@ -1,6 +1,6 @@
 import numpy as np
 import re
-
+from logger import log
 
 
 def BoW (claim, headline):
@@ -19,11 +19,14 @@ def BoW (claim, headline):
             if hw == cw:
                 bag[i] += 1
 
+    log("Feature Bag of Words completed.")
     return np.array(bag)
 
 
 def Q (claim, headline):
     if "?" in headline:
+        log("Feature Question completed.")
         return 1
     else:
+        log("Feature Question completed.")
         return 0
