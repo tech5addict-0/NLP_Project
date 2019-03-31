@@ -1,18 +1,45 @@
 import numpy as np
 import pandas as pd
+import re
 
 from gensim.models import Word2Vec,KeyedVectors
 from nltk.tokenize import sent_tokenize, word_tokenize
 import networkx as nx
 
 from logger import Logger
-from utils import BoW, Q
+from utils import cosine_similarity_by_vector
 
 class FeatureExtraction():
 
     def __init__(self, logger):
         self.logger = logger
 
+    def get_BoW_feature(self, claim, headline):
+
+        wordsClaim = re.sub("[^\w]", " ", claim).split()
+        wordsClaim_cleaned = [w.lower() for w in wordsClaim]
+        wordsClaim_cleaned = sorted(list(set(wordsClaim_cleaned)))
+
+        wordsHeadline = re.sub("[^\w]", " ", headline).split()
+        wordsHeadline_cleaned = [w.lower() for w in wordsHeadline]
+        wordsHeadline_cleaned = sorted(list(set(wordsHeadline_cleaned)))
+
+        bag = np.zeros(len(wordsClaim_cleaned))
+        for hw in wordsHeadline_cleaned:
+            for i, cw in enumerate(wordsClaim_cleaned):
+                if hw == cw:
+                    bag[i] += 1
+
+        self.logger.log("Feature Bag of Words completed.")
+        return np.array(bag)
+
+    def get_question_feature(self, claim, headline):
+        if "?" in headline:
+            self.logger.log("Feature Question completed.")
+            return 1
+        else:
+            self.logger.log("Feature Question completed.")
+            return 0
 
 #RootDist Zhang
 #Neg Zhang
@@ -30,21 +57,15 @@ class FeatureExtraction():
 
 #SVO Priya
 #word2vec Priya
-
-
-
-
-
     def get_word2vec_cosine_similarity(self, model, claim, headline):
         headline_vectors = [model.wv[word] for word in headline.lower().split()]
         headline_vector = np.prod(headline_vectors, axis=0)
 
         claim_vectors = [model.wv[word] for word in claim.lower().split()]
         claim_vector = np.prod(claim_vectors, axis=0)
-        return self.cosine_similarity_by_vector(claim_vector, headline_vector)
+        return cosine_similarity_by_vector(claim_vector, headline_vector)
 
-    def cosine_similarity_by_vector(self, vector1, vector2):
-        return np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
+
 
 
     #need to confirm how data is passed here
@@ -54,8 +75,8 @@ class FeatureExtraction():
 
         #iteration over each row will change based on datastructure
         for claim,headline in enumerate(data_dict.items()):
-            bow = BoW(self, claim, headline)
-            q = Q(self, claim, headline)
+            bow = self.get_BoW_feature( claim, headline)
+            q = self.get_question_feature( claim, headline)
             #root_dist =
             #neg =
             #ppdb =
