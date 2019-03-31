@@ -124,16 +124,21 @@ d = depths['116a3920-c41c-11e4-883c-a7fa7a3c5066']
 print(d)
 
 sp_data = get_stanparse_data()
-#len(sp_data.values()[0]['sentences'])
-#print(len)
-#more_than_one_sentence = [v for v in sp_data.values() if len(v['sentences']) > 1]
-#more_than_one_sentence[0]
-#print(more_than_one_sentence[0])
+#print(len(sp_data.values()[0]['sentences']))
+
+
+more_than_one_sentence = [v for v in sp_data.values() if len(v['sentences']) > 1]
+more_than_one_sentence[0]
+print(more_than_one_sentence[0])
+
+
+
 #Neg Zhang
 
 
 
 #################################################################
+
 cId, aId = '4893f040-a5c6-11e4-aa4f-ff16e52e0d56', '53faf1e0-a5c6-11e4-aa4f-ff16e52e0d56'
 aligned_data = get_aligned_data()
 print(aligned_data)
@@ -144,27 +149,26 @@ penis = df[df.articleId == aId]
 #print(penis.claimHeadline[569])
 claim = get_tokenized_lemmas(penis.claimHeadline[569])
 article = get_tokenized_lemmas(penis.articleHeadline[569])
-print(claim)
+#print(claim)
 [(claim[i], article[j]) for (i,j) in aligned_data[(cId, aId)]]
 print(claim)
 print(article)
 
-#def get_w2v_model():
-#    folder = "E:\git\PycharmProjects\\NLP_Project\pickled\\w2vec-data.pickle"
-#    return gensim.models.KeyedVectors.load_word2vec_format(folder,
-#                                                       binary=True)
+def get_w2v_model():
+    folder = "E:\git\PycharmProjects\\NLP_Project\pickled\\w2vec-data.pickle"
+    return gensim.models.KeyedVectors.load_word2vec_format(folder,
+                                                       binary=True)
 
-#def cosine_sim(u, v):
-#    """Returns the cosine similarity between two 1-D vectors, u and v"""
-#    return np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))
+def cosine_sim(u, v):
+    """Returns the cosine similarity between two 1-D vectors, u and v"""
+    return np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))
 
-#w2vec_model = get_w2v_model()
-
-
+w2vec_model = get_w2v_model()
+cosine_sim(w2vec_model['having'], w2vec_model['finding'])
 stanparse_data = get_stanparse_data()
 stanparse_data[cId]['sentences'][0]['dependencies']
 stanparse_data[aId]['sentences']#[0]['dependencies']
-
+#cosine(w2vec_model['safe'], w2vec_model['stolen'])
 
 
 
