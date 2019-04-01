@@ -48,7 +48,7 @@ def rootDist():
     _data_folder = os.path.join(os.path.dirname(__file__), 'emergent')
     df_clean_train = get_dataset('url-versions-2015-06-14-clean-train.csv')
     example = df_clean_train.ix[0, :]
-    #print(example)
+    print("This is original exmaple",example)
     dep_parse_data = get_stanparse_data()
     example_parse = dep_parse_data[example.articleId]
     print(example_parse)
