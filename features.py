@@ -7,7 +7,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 import networkx as nx
 
 from logger import Logger
-from utils import cosine_similarity_by_vector
+from utils import cosine_similarity_by_vector, alignment_score
 
 class FeatureExtraction():
 
@@ -45,17 +45,39 @@ class FeatureExtraction():
 #Neg Zhang
 #PPDB Priya
     def get_ppdb_feature(self, claim, headline):
-        min_score = -10
-        maxscore = 10
-        normalize_constant = min(len(claim.split(), headline.split()))
+        dummy_word = ";"
+        length_claim = len(claim.split())
+        length_headline = len(headline.split())
+
         word_pairs = [(c,h) for c in sent_tokenize(claim) for h in sent_tokenize(headline)]
-        edges = ((i,j,kuhn_munkres_score(i,j)) for (i,j) in enumerate(word_pairs))
+        if(length_claim < length_headline):
+            word_pairs.append([(dummy_word, word) for word in headline.split()])
+            normalize_constant = length_claim
+        else:
+            word_pairs.append([(word, dummy_word) for word in claim.split()])
+            normalize_constant = len(headline.split())
+
+        ppdb_lexical_file = self.logger.config_dict['PPDB_LEXICAL']
+        edges = [(i,j,alignment_score(ppdb_lexical_file, i,j)) for (i,j) in enumerate(word_pairs)]
         alignment_graph = nx.Graph()
-        alignment_graph.add_edges_from(edges)
-        return
+        alignment_graph.add_nodes_from([word_pairs[i][0] for i in range(0,len(word_pairs))], bipartite=0)
+        alignment_graph.add_nodes_from([word_pairs[i][1] for i in range(0, len(word_pairs))], bipartite=1)
+        #alignment_graph.add_edges_from(edges)
+        #[alignment_graph.add_edge(i,j,weight=alignment_score(ppdb_lexical_file, i, j)) for i, j in enumerate(word_pairs)]
+        for i,j in enumerate(word_pairs):
+            alignment_graph.add_edge(i,j,weight=alignment_score(ppdb_lexical_file, i, j))
+        # kuhn-munkers algo
+        max_scorings = nx.max_weight_matching(alignment_graph)
+        weights = [alignment_graph.get_edge_data(node_pair[0],node_pair[1]) for node_pair in max_scorings]
+        return np.sum([weights[i]['weight'] for i in range(0,len(weights))]) / normalize_constant
 
 
 #SVO Priya
+    def get_svo_feature(selfself,claim, headline):
+        #get svo pair for claim and headline
+        # for each svo pair get label
+        return
+
 #word2vec Priya
     def get_word2vec_cosine_similarity(self, model, claim, headline):
         headline_vectors = [model.wv[word] for word in headline.lower().split()]
@@ -79,8 +101,8 @@ class FeatureExtraction():
             q = self.get_question_feature( claim, headline)
             #root_dist =
             #neg =
-            #ppdb =
-            #svo =
+            ppdb = self.get_ppdb_feature(claim,headline)
+            svo = self.get_svo_feature(claim, headline)
 
             #model = KeyedVectors.load_word2vec_format(self.logger.config_dict['GOOGLE_NEWS_VECTOR_FILE'], binary=True)
             model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True)
