@@ -163,8 +163,8 @@ def cosine_sim(u, v):
     """Returns the cosine similarity between two 1-D vectors, u and v"""
     return np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))
 
-w2vec_model = get_w2v_model()
-cosine_sim(w2vec_model['having'], w2vec_model['finding'])
+#w2vec_model = get_w2v_model()
+#cosine_sim(w2vec_model['having'], w2vec_model['finding'])
 stanparse_data = get_stanparse_data()
 stanparse_data[cId]['sentences'][0]['dependencies']
 stanparse_data[aId]['sentences']#[0]['dependencies']
