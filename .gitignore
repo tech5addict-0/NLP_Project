@@ -1,5 +1,5 @@
 venv/
 .idea/
 data/*
-*pycache*
+__pycache__/
 emergent/*
