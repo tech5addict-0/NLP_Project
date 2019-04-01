@@ -75,6 +75,7 @@ class FeatureExtraction():
 #SVO Priya
     def get_svo_feature(selfself,claim, headline):
         #get svo pair for claim and headline
+
         # for each svo pair get label
         return
 
