@@ -51,6 +51,7 @@ def rootDist():
     #print(example)
     dep_parse_data = get_stanparse_data()
     example_parse = dep_parse_data[example.articleId]
+    print(example_parse)
     grph, grph_labels = build_dep_graph(example_parse['sentences'][0]['dependencies'])
     print("The grph is:",grph)
     example_parse['sentences'][0]['dependencies']
@@ -114,7 +115,7 @@ def get_ppdb_feature(self, claim, headline):
 
 #SVO Priya
 #word2vec Priya
-
+rootDist()
 logger = Logger(show = True, html_output = True, config_file = "config.txt")
 feature_extraction = FeatureExtraction(logger)
 data_dict = {'this is an apple': 'the apple was red', 'Cherries are sweet': 'fruits are sweet'}
