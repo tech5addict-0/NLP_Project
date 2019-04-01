@@ -8,6 +8,7 @@ import networkx as nx
 
 from logger import Logger
 from utils import cosine_similarity_by_vector, alignment_score
+from random import randint
 
 class FeatureExtraction():
 
@@ -92,9 +93,10 @@ class FeatureExtraction():
 
 
     #need to confirm how data is passed here
-    def compute_features(self,data_dict):
+    def compute_features2(self,data_dict):
         self.logger.log("Start computing features...")
         features = []
+
 
         #iteration over each row will change based on datastructure
         for claim,headline in enumerate(data_dict.items()):
@@ -119,7 +121,20 @@ class FeatureExtraction():
         return pd.DataFrame(features,colnames = colnames)
 
 
-logger = Logger(show = True, html_output = True, config_file = "config.txt")
-feature_extraction = FeatureExtraction(logger)
-data_dict = {'this is an apple': 'the apple was red', 'Cherries are sweet': 'fruits are sweet'}
-feature_extraction.compute_features(data_dict)
+    def compute_features(self,data_dict):
+        #print(data_dict)
+        features = []
+        #print(data_dict)
+        for claimId in data_dict:
+            #print(data_dict[claimId])
+            for article in data_dict[claimId]["articles"]:
+                stance = data_dict[claimId]["articles"][article][1]
+                features.append([randint(1,20), randint(1,20), stance, claimId])
+        colNames = ["feat1", "feat2", "stance", "claimId"]
+        return pd.DataFrame(features, columns=colNames)
+
+
+#logger = Logger(show = True, html_output = True, config_file = "config.txt")
+#feature_extraction = FeatureExtraction(logger)
+#data_dict = {'this is an apple': 'the apple was red', 'Cherries are sweet': 'fruits are sweet'}
+#feature_extraction.compute_features(data_dict)
