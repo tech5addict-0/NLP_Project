@@ -7,14 +7,14 @@ import networkx as nx
 
 from logger import Logger
 from random import randint
+from utils import BoW, Q
 
 class FeatureExtraction():
 
     def __init__(self, logger):
         self.logger = logger
 
-#BoW marjolein
-#Q marjolein
+
 #RootDist Zhang
 #Neg Zhang
 #PPDB Priya
@@ -56,8 +56,8 @@ class FeatureExtraction():
 
         #iteration over each row will change based on datastructure
         for claim,headline in enumerate(data_dict.items()):
-            #bow =
-            #q =
+            bow = BoW(self, claim, headline)
+            q = Q(self, claim, headline)
             #root_dist =
             #neg =
             #ppdb =
