@@ -4,8 +4,8 @@ venv/*
 .idea/
 
 #data files
-data/
 __pycache__*
 emergent/
 data/ppdb-2.0-tldr
 data/Google*
+data/
