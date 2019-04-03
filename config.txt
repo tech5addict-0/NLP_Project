@@ -1,5 +1,3 @@
-{
-    "GOOGLE_NEWS_VECTOR_FILE" : "data/GoogleNews-vectors-negative300.bin"
-    "PPDB_LEXICAL" : "data/ppdb-1.0-s-lexical"
-    "PPDB_PHRASAL" : "data/ppdb-1.0-s-phrasal"
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:4497a0ae533c7eb5dcd5836af72c9558acd7a3ff266f297564e6d0f9c1aae557
+size 172

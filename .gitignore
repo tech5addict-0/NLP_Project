@@ -1,5 +1,3 @@
-venv/
-.idea/
-data/*
-__pycache__/
-emergent/*
+version https://git-lfs.github.com/spec/v1
+oid sha256:4d101f56c23e6db462ae750fa4cecb92de3442712fd17db3809914a6922334e8
+size 62
