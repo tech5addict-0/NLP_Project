@@ -1,4 +1,5 @@
 import numpy as np
+import metrics
 import re
 from logger import Logger
 
@@ -33,3 +34,22 @@ def Q (self, claim, headline):
     else:
         self.logger.log("Feature Question completed.")
         return 0
+
+
+def getAllMetricsAndSave(nameClassifier,predLabels,testingLabels):
+    ''' Get all the metrics from the predicted labels and save the results in the directory results/ and return the accuracy'''
+
+    # get the confusion Matrix
+    confMat = metrics.getConfusionMatrix(predLabels,testingLabels)
+    confMat.to_csv("results/"+nameClassifier+"-confMat.csv")
+    
+    # Precision
+    prec = metrics.getPrecisionPerClass(confMat)
+    prec.to_csv("results/"+nameClassifier+"-Precision.csv")
+    
+    # Recall
+    recall = metrics.getRecallPerClass(confMat)
+    recall.to_csv("results/"+nameClassifier+"-Recall.csv")
+
+    acc = metrics.getAccuracy(confMat)
+    return acc
