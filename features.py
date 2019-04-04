@@ -5,7 +5,6 @@ import nltk
 import os
 import corenlp
 import networkx as nx
-
 from gensim.models import Word2Vec,KeyedVectors
 from nltk.tokenize import sent_tokenize, word_tokenize
 from sklearn.model_selection._split import _BaseKFold
@@ -55,21 +54,11 @@ class FeatureExtraction():
 
     # RootDist Zhang
     def rootDist(claim,headline,count):
-        #count = 0
-        #VALID_STANCE_LABELS = ['for', 'against', 'observing']
-
-        #data_folder = os.path.join(os.path.dirname(__file__), 'emergent')
         df_clean_train = get_dataset('url-versions-2015-06-14-clean-train.csv')
-        ##orginal code
-        ##example = df_clean_train.ix[0, :]
-        ##
-        #print(df_clean_train.ix[0:])
-        #example2 = df_clean_train.ix[0:]
-        #example2.
-        #print(example2[count])
         example = df_clean_train.ix[count, :]
         dep_parse_data = get_stanparse_data()
         example_parse = dep_parse_data[example.articleId]
+        #print(corenlp.ParseTree(claim))
         print(example_parse)
         grph, grph_labels = build_dep_graph(example_parse['sentences'][0]['dependencies'])
         print("The grph is:", grph)
@@ -79,12 +68,9 @@ class FeatureExtraction():
         key = FeatureExtraction.get_key(grph_labels,"neg")
         print(len(key))
         if(len(key)):
-            #print("the key is",key)
-            #print(key[0][0])
             depth_key = key[0][0]
         else:
-            depth = 0
-        #print(calc_depths(grph))
+            depth_key = 0
         dicta = calc_depths(grph)
         print("the root dist is:",dicta.get(depth_key))
         #depths = get_stanparse_depths()
@@ -92,11 +78,12 @@ class FeatureExtraction():
         #print("the depths:", d)
         #e = list(d.items())
         #print(e[-1])
-        #sp_data = get_stanparse_data()
+        sp_data = get_stanparse_data()
 
-        #more_than_one_sentence = [v for v in sp_data.values() if len(v['sentences']) > 1]
-       #more_than_one_sentence[count]
-        #print(more_than_one_sentence[count])
+        more_than_one_sentence = [v for v in sp_data.values() if len(v['sentences']) > 1]
+        u_depent = more_than_one_sentence[count]
+        print(u_depent['sentences'][0]['dependencies'])
+        print(more_than_one_sentence[count])
 
     #################################################################
     # Neg Zhang
