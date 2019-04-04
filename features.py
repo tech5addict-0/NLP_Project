@@ -51,14 +51,19 @@ class FeatureExtraction():
             return 0
 
     # RootDist Zhang
-    def rootDist(count):
-        VALID_STANCE_LABELS = ['for', 'against', 'observing']
+    def rootDist(claim,headline,count):
+        #count = 0
+        #VALID_STANCE_LABELS = ['for', 'against', 'observing']
 
-        data_folder = os.path.join(os.path.dirname(__file__), 'emergent')
+        #data_folder = os.path.join(os.path.dirname(__file__), 'emergent')
         df_clean_train = get_dataset('url-versions-2015-06-14-clean-train.csv')
         ##orginal code
         ##example = df_clean_train.ix[0, :]
         ##
+        #print(df_clean_train.ix[0:])
+        example2 = df_clean_train.ix[0:]
+        #example2.
+        #print(example2[count])
         example = df_clean_train.ix[count, :]
         dep_parse_data = get_stanparse_data()
         example_parse = dep_parse_data[example.articleId]
@@ -82,7 +87,8 @@ class FeatureExtraction():
     #################################################################
     # Neg Zhang
     #################################################################
-    def neg(self,count):
+    def neg(self,claim,headline):
+        count = 0
         #cId, aId = '4893f040-a5c6-11e4-aa4f-ff16e52e0d56', '53faf1e0-a5c6-11e4-aa4f-ff16e52e0d56'
         df_clean_train = get_dataset('url-versions-2015-06-14-clean-train.csv')
         example = df_clean_train.ix[count, :]
@@ -168,12 +174,13 @@ class FeatureExtraction():
     def compute_features2(self,data_dict):
         self.logger.log("Start computing features...")
         features = []
+        count = 0
        #iteration over each row will change based on datastructure
         for claim,headline in enumerate(data_dict.items()):
             bow = self.get_BoW_feature( claim, headline)
             q = self.get_question_feature( claim, headline)
-            root_dist = self.rootDist(1)
-            neg = self.neg(1)
+            root_dist = self.rootDist(claim,headline,count)
+            neg = self.neg(claim,headline)
             ppdb = self.get_ppdb_feature(claim,headline)
             svo = self.get_svo_feature(claim, headline)
 
@@ -183,7 +190,7 @@ class FeatureExtraction():
             word2vec_feature = self.get_word2vec_cosine_similarity(model, claim, headline)
             #features.append([bow, q, root_dist, neg, ppdb, svo, word2vec_feature])
             features.append([word2vec_feature])
-
+            count = count + 1
         #colnames = ["BoW","Q","RootDist","Neg","PPDB","SVO","word2vec"]
         colnames = ["word2vec"]
         self.logger.log("Finished computing features", show_time=True)
@@ -213,7 +220,9 @@ class ClaimKFold(_BaseKFold):
     def __len__(self):
         return self.n_folds
 
-
+#claim = "Apple will sell 19 million Apple Watches in 2015"
+#headline = "BMO forecasts 19M Apple Watch sales in 2015, with more than half selling in holiday season"
+#FeatureExtraction.rootDist(claim,headline)
 #logger = Logger(show = True, html_output = True, config_file = "config.txt")
 #feature_extraction = FeatureExtraction(logger)
 #data_dict = {'this is an apple': 'the apple was red', 'Cherries are sweet': 'fruits are sweet'}
