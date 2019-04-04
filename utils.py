@@ -1,4 +1,5 @@
 import numpy as np
+import metrics
 import re
 import pandas as pd
 import os
@@ -111,3 +112,29 @@ def cosine_sim(u, v):
 
 
 
+def Q (self, claim, headline):
+    if "?" in headline:
+        self.logger.log("Feature Question completed.")
+        return 1
+    else:
+        self.logger.log("Feature Question completed.")
+        return 0
+
+
+def getAllMetricsAndSave(nameClassifier,predLabels,testingLabels):
+    ''' Get all the metrics from the predicted labels and save the results in the directory results/ and return the accuracy'''
+
+    # get the confusion Matrix
+    confMat = metrics.getConfusionMatrix(predLabels,testingLabels)
+    confMat.to_csv("results/"+nameClassifier+"-confMat.csv")
+    
+    # Precision
+    prec = metrics.getPrecisionPerClass(confMat)
+    prec.to_csv("results/"+nameClassifier+"-Precision.csv")
+    
+    # Recall
+    recall = metrics.getRecallPerClass(confMat)
+    recall.to_csv("results/"+nameClassifier+"-Recall.csv")
+
+    acc = metrics.getAccuracy(confMat)
+    return acc
