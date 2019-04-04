@@ -66,7 +66,10 @@ def rootDist(count):
 #Neg Zhang
 #################################################################
 def neg():
-    cId, aId = '4893f040-a5c6-11e4-aa4f-ff16e52e0d56', '53faf1e0-a5c6-11e4-aa4f-ff16e52e0d56'
+    df_clean_train = get_dataset('url-versions-2015-06-14-clean-train.csv')
+    #cId, aId = '4893f040-a5c6-11e4-aa4f-ff16e52e0d56', '53faf1e0-a5c6-11e4-aa4f-ff16e52e0d56'
+    example = df_clean_train.ix[0, :]
+    cId,aId = example.claimId,example.articleId
     aligned_data = get_aligned_data()
     print(aligned_data)
     aligned_data[(cId, aId)]
