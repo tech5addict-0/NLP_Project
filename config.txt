@@ -1,3 +1,5 @@
 {
     "GOOGLE_NEWS_VECTOR_FILE" : "data/GoogleNews-vectors-negative300.bin"
+    "PPDB_LEXICAL" : "data/ppdb-1.0-s-lexical"
+    "PPDB_PHRASAL" : "data/ppdb-1.0-s-phrasal"
 }
