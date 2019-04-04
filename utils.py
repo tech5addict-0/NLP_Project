@@ -5,46 +5,47 @@ import os
 import nltk
 import gensim
 
+from nltk import stem
 from logger import Logger
 try:
     import cPickle as pickle
 except:
     import pickle
 
+
 _pickled_data_folder = "E:\git\PycharmProjects\\NLP_Project\pickled\\stanparse-data.pickle"
 _pickled_data_folder2 = "E:\git\PycharmProjects\\NLP_Project\pickled\\aligned-data.pickle"
+MIN_ALIGNMENT_SCORE = -10
+MAX_ALIGNMENT_SCORE = 10
 
 
-def __init__(self, logger):
-    self.logger = logger
+def cosine_similarity_by_vector(vector1, vector2):
+    return np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
 
-def BoW (self, claim, headline):
-
-    wordsClaim = re.sub("[^\w]", " ", claim).split()
-    wordsClaim_cleaned = [w.lower() for w in wordsClaim]
-    wordsClaim_cleaned = sorted(list(set(wordsClaim_cleaned)))
-
-    wordsHeadline = re.sub("[^\w]", " ", headline).split()
-    wordsHeadline_cleaned = [w.lower() for w in wordsHeadline]
-    wordsHeadline_cleaned = sorted(list(set(wordsHeadline_cleaned)))
-
-    bag = np.zeros(len(wordsClaim_cleaned))
-    for hw in wordsHeadline_cleaned:
-        for i, cw in enumerate(wordsClaim_cleaned):
-            if hw == cw:
-                bag[i] += 1
-
-    self.logger.log("Feature Bag of Words completed.")
-    return np.array(bag)
-
-
-def Q (self, claim, headline):
-    if "?" in headline:
-        self.logger.log("Feature Question completed.")
-        return 1
+def alignment_score(file, word1, word2):
+    stemmer = stem.SnowballStemmer("english")
+    if(stemmer.stem(word1) == stemmer.stem(word2)):
+        return MAX_ALIGNMENT_SCORE
     else:
-        self.logger.log("Feature Question completed.")
-        return 0
+        return _paraphrase_score(file, word1, word2)
+
+
+def _paraphrase_score(file, word1, word2):
+    paraphrase_score = MIN_ALIGNMENT_SCORE
+    with open(file, 'r') as ppdb_lex:
+        lines = ppdb_lex.readlines()
+        matches = re.findall(word1,lines)
+        if matches:
+            final_matches = re.findall(word2,matches)
+            if final_matches:
+                for line in final_matches:
+                    match_build = line.split("|||")
+                    if ((match_build[1] == word1 & match_build[2] == word2) | (match_build[1] == word2 & match_build[2] == word1)):
+                        metrics = [metric for metric in match_build[3].split(" ")]
+                        scorings = {key_val[0]: int(key_val[1]) for key_val in [scoring.split("=") for scoring in metrics]}
+                        paraphrase_score = -np.log(scorings['p(f|e)']) -np.log(scorings['p(f|e)']) - np.log(scorings['p(e|f,LHS)']) - np.log(scorings['p(f|e,LHS)']) + 0.3 * (-np.log(scorings['p(LHS|e)'])) + 0.3 * (-np.log(scorings['p(LHS|f)'])) + 100 * scorings['RarityPenalty']
+    return paraphrase_score
+
 
 def get_stanparse_data():
     with open(_pickled_data_folder, 'rb') as f:
@@ -108,15 +109,5 @@ def cosine_sim(u, v):
     """Returns the cosine similarity between two 1-D vectors, u and v"""
     return np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))
 
-def get_word2vec_cosine_similarity(self, model, claim, headline):
-    headline_vectors = [model.wv[word] for word in headline.lower().split()]
-    headline_vector = np.prod(headline_vectors, axis=0)
-
-    claim_vectors = [model.wv[word] for word in claim.lower().split()]
-    claim_vector = np.prod(claim_vectors, axis=0)
-    return self.cosine_similarity_by_vector(claim_vector, headline_vector)
-
-def cosine_similarity_by_vector(self, vector1, vector2):
-    return np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
 
 
