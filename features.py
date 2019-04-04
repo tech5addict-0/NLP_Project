@@ -50,6 +50,9 @@ class FeatureExtraction():
             self.logger.log("Feature Question completed.")
             return 0
 
+    def get_key(dict, value):
+        return [k for k, v in dict.items() if v == value]
+
     # RootDist Zhang
     def rootDist(claim,headline,count):
         #count = 0
@@ -61,7 +64,7 @@ class FeatureExtraction():
         ##example = df_clean_train.ix[0, :]
         ##
         #print(df_clean_train.ix[0:])
-        example2 = df_clean_train.ix[0:]
+        #example2 = df_clean_train.ix[0:]
         #example2.
         #print(example2[count])
         example = df_clean_train.ix[count, :]
@@ -73,16 +76,27 @@ class FeatureExtraction():
         example_parse['sentences'][0]['dependencies']
         print("The example_parse is", example_parse)
         print("the grph_label is:", grph_labels)
-        calc_depths(grph)
-        depths = get_stanparse_depths()
-        d = depths['116a3920-c41c-11e4-883c-a7fa7a3c5066']
-        print("the depths:", d)
+        key = FeatureExtraction.get_key(grph_labels,"neg")
+        print(len(key))
+        if(len(key)):
+            #print("the key is",key)
+            #print(key[0][0])
+            depth_key = key[0][0]
+        else:
+            depth = 0
+        #print(calc_depths(grph))
+        dicta = calc_depths(grph)
+        print("the root dist is:",dicta.get(depth_key))
+        #depths = get_stanparse_depths()
+        #d = depths['116a3920-c41c-11e4-883c-a7fa7a3c5066']
+        #print("the depths:", d)
+        #e = list(d.items())
+        #print(e[-1])
+        #sp_data = get_stanparse_data()
 
-        sp_data = get_stanparse_data()
-
-        more_than_one_sentence = [v for v in sp_data.values() if len(v['sentences']) > 1]
-        more_than_one_sentence[count]
-        print(more_than_one_sentence[count])
+        #more_than_one_sentence = [v for v in sp_data.values() if len(v['sentences']) > 1]
+       #more_than_one_sentence[count]
+        #print(more_than_one_sentence[count])
 
     #################################################################
     # Neg Zhang
@@ -220,9 +234,9 @@ class ClaimKFold(_BaseKFold):
     def __len__(self):
         return self.n_folds
 
-#claim = "Apple will sell 19 million Apple Watches in 2015"
-#headline = "BMO forecasts 19M Apple Watch sales in 2015, with more than half selling in holiday season"
-#FeatureExtraction.rootDist(claim,headline)
+claim = "Apple will sell 19 million Apple Watches in 2015"
+headline = "BMO forecasts 19M Apple Watch sales in 2015, with more than half selling in holiday season"
+FeatureExtraction.rootDist(claim,headline,0)
 #logger = Logger(show = True, html_output = True, config_file = "config.txt")
 #feature_extraction = FeatureExtraction(logger)
 #data_dict = {'this is an apple': 'the apple was red', 'Cherries are sweet': 'fruits are sweet'}

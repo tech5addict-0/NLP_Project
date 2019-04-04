@@ -15,6 +15,7 @@ except:
 
 _pickled_data_folder = "E:\git\PycharmProjects\\NLP_Project\pickled\\stanparse-data.pickle"
 _pickled_data_folder2 = "E:\git\PycharmProjects\\NLP_Project\pickled\\aligned-data.pickle"
+_pickled_data_folder3 = "E:\git\PycharmProjects\\NLP_Project\pickled\\stanparse-depths.pickle"
 MIN_ALIGNMENT_SCORE = -10
 MAX_ALIGNMENT_SCORE = 10
 
@@ -56,7 +57,7 @@ def get_stanford_idx(x):
     return x[:i].lower(), int(x[(i+1):])
 
 def get_stanparse_depths():
-    with open(_pickled_data_folder, 'rb') as f:
+    with open(_pickled_data_folder3, 'rb') as f:
         return pickle.load(f)
 
 def get_aligned_data():
