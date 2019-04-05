@@ -1,6 +1,7 @@
 import getData
 import features
 import metrics
+import utils
 
 from logger import Logger
 
@@ -8,15 +9,15 @@ import pandas as pd
 import numpy as np
 import json
 from sklearn.linear_model import LogisticRegression
-from sklearn.datasets import load_iris
+from sklearn import svm
 from sklearn.metrics import classification_report
+import sklearn.model_selection
 
 # Get the data
 with open('datasets/dataset.json','r') as json_file:  
    dataset = json.load(json_file)
-   #print(dataset)
 
-#print(dataset)
+
 # Calculate the entire set of features
 logger = Logger(show = True, html_output = True, config_file = "config.txt")
 feature_extraction = features.FeatureExtraction(logger)
@@ -35,18 +36,6 @@ testingSet = featuresDataset.loc[featuresDataset["claimId"].isin(testingClaimSet
 
 
 
-# print(trainingSet)
-# #print(trainingClaimSet)
-# print(len(trainingSet))
-
-# wantedSize = 0
-# for claimId in dataset:
-#    if claimId in trainingClaimSet:
-#       wantedSize += len(dataset[claimId]['articles'])
-
-# print(wantedSize)
-
-
 # Separate features and labels in the training set
 trainingFeatures = trainingSet[trainingSet.columns[:-2]]
 trainingFeatures = trainingFeatures.values.tolist()
@@ -55,38 +44,76 @@ trainingLabels = trainingSet[trainingSet.columns[-2:-1]]
 trainingLabels = np.ravel(trainingLabels.values)
 
 
-# Train the classifiers on training sets
-logisticClass = LogisticRegression(solver='lbfgs',multi_class="auto").fit(trainingFeatures, trainingLabels)
+# Define validation set
+validationFeatures = validationSet[validationSet.columns[:-2]]
+validationFeatures = validationFeatures.values.tolist()
+
+validationLabels = validationSet[validationSet.columns[-2:-1]]
+validationLabels = np.ravel(validationLabels.values)
 
 
-# Do some Validation stuff ?
-
-# Get error rates and evaluation metrics from all the classifiers on the test set
-
-# Get only features of testingSet
+# Get features and labels of testingSet
 testingFeatures = testingSet[trainingSet.columns[:-2]]
 testingFeatures = testingFeatures.values
 
-# Get the labels of the testing set
 testingLabels = testingSet[trainingSet.columns[-2:-1]]
 testingLabels = np.ravel(testingLabels.values)
 
-# Get the confusion matrix
+
+# Create the big training+ValidationSet
+gridFeatures = np.concatenate((trainingFeatures,validationFeatures))
+gridLabels = np.concatenate((trainingLabels, validationLabels))
+indexValid = list(range(len(trainingLabels),len(trainingLabels)+len(validationLabels)))
+
+
+# Train the classifiers on training sets and save the data in a specific folder
+
+
+accuracy = []
+indexName = []
+# =========== LOGISTIC CLASSIFIER =============
+
+nameClassifier = "LogisticClassifier"
+logisticClass = LogisticRegression(solver='lbfgs',multi_class="auto").fit(trainingFeatures, trainingLabels)
+
+# get the predicted labels
 predLabels = logisticClass.predict(testingFeatures)
-confMat = metrics.getConfusionMatrix(predLabels,testingLabels)
-print(confMat)
 
-# Get All the metrics :
-acc = metrics.getAccuracy(confMat)
-print(acc)
+# Get the metrics and save them
+acc = utils.getAllMetricsAndSave(nameClassifier,predLabels,testingLabels)
 
-prec = metrics.getPrecisionPerClass(confMat)
-print(prec)
-
-recall = metrics.getRecallPerClass(confMat)
-print(recall)
-
-#print(classification_report(testingLabels, predLabels))
+# Accuracy
+accuracy.append(acc)
+indexName.append(nameClassifier)
 
 
-# Save data
+# =========== SVM ==============
+nameClassifier = "SVM"
+svc = svm.SVC(gamma="auto")
+#params = {"kernel":("linear","poly","rbf","sigmoid"), 'C':[i/2 for i in range(1,20)]}
+params = {"kernel":("linear",), 'C':[i/2 for i in range(1,2)]}
+ps = sklearn.model_selection.PredefinedSplit(indexValid)
+clf = sklearn.model_selection.GridSearchCV(svc,params,cv=ps)
+clf.fit(gridFeatures,gridLabels)
+
+print("done")
+
+# get the predicted labels
+predLabels = clf.predict(testingFeatures)
+
+# Get the metrics and save them
+acc = utils.getAllMetricsAndSave(nameClassifier,predLabels,testingLabels)
+
+# Accuracy
+accuracy.append(acc)
+indexName.append(nameClassifier)
+
+
+
+
+
+
+# Save data (the accuracy)
+
+accData = pd.DataFrame(accuracy, columns=["Accuracy"], index=indexName)
+accData.to_csv("results/Accuracy.csv")
