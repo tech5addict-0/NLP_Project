@@ -13,11 +13,15 @@ except:
     import pickle
 
 
-_pickled_data_folder = "E:\git\PycharmProjects\\NLP_Project\pickled\\stanparse-data.pickle"
-_pickled_data_folder2 = "E:\git\PycharmProjects\\NLP_Project\pickled\\aligned-data.pickle"
+_pickled_data_folder = "pickled/stanparse-data.pickle"
+_pickled_data_folder2 = "pickled/aligned-data.pickle"
 MIN_ALIGNMENT_SCORE = -10
 MAX_ALIGNMENT_SCORE = 10
 
+def getLinesFromFile(filePath, fileOption ):
+    with open(filePath, fileOption) as f:
+        lines = f.readlines()
+    return lines
 
 def cosine_similarity_by_vector(vector1, vector2):
     return np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
@@ -32,18 +36,17 @@ def alignment_score(file, word1, word2):
 
 def _paraphrase_score(file, word1, word2):
     paraphrase_score = MIN_ALIGNMENT_SCORE
-    with open(file, 'r') as ppdb_lex:
-        lines = ppdb_lex.readlines()
-        matches = re.findall(word1,lines)
-        if matches:
-            final_matches = re.findall(word2,matches)
-            if final_matches:
-                for line in final_matches:
-                    match_build = line.split("|||")
-                    if ((match_build[1] == word1 & match_build[2] == word2) | (match_build[1] == word2 & match_build[2] == word1)):
-                        metrics = [metric for metric in match_build[3].split(" ")]
-                        scorings = {key_val[0]: int(key_val[1]) for key_val in [scoring.split("=") for scoring in metrics]}
-                        paraphrase_score = -np.log(scorings['p(f|e)']) -np.log(scorings['p(f|e)']) - np.log(scorings['p(e|f,LHS)']) - np.log(scorings['p(f|e,LHS)']) + 0.3 * (-np.log(scorings['p(LHS|e)'])) + 0.3 * (-np.log(scorings['p(LHS|f)'])) + 100 * scorings['RarityPenalty']
+    lines = getLinesFromFile(file,'r')
+    matches = re.findall(word1,lines)
+    if matches:
+        final_matches = re.findall(word2,matches)
+        if final_matches:
+            for line in final_matches:
+                match_build = line.split("|||")
+                if ((match_build[1] == word1 & match_build[2] == word2) | (match_build[1] == word2 & match_build[2] == word1)):
+                    metrics = [metric for metric in match_build[3].split(" ")]
+                    scorings = {key_val[0]: int(key_val[1]) for key_val in [scoring.split("=") for scoring in metrics]}
+                    paraphrase_score = -np.log(scorings['p(f|e)']) -np.log(scorings['p(f|e)']) - np.log(scorings['p(e|f,LHS)']) - np.log(scorings['p(f|e,LHS)']) + 0.3 * (-np.log(scorings['p(LHS|e)'])) + 0.3 * (-np.log(scorings['p(LHS|f)'])) + 100 * scorings['RarityPenalty']
     return paraphrase_score
 
 
@@ -64,7 +67,7 @@ def get_aligned_data():
         return pickle.load(f)
 
 def get_dataset(filename='url-versions-2015-06-14-clean.csv'):
-    folder = "E:\git\PycharmProjects\\NLP_Project\emergent\\url-versions-2015-06-14-clean.csv"
+    folder = "emergent/url-versions-2015-06-14-clean.csv"
     return pd.read_csv(os.path.join(folder))
 
 def calc_depths(grph, n=0, d=0, depths=None):
@@ -102,7 +105,7 @@ def get_tokenized_lemmas(s):
 #Neg
 ###############################################################
 def get_w2v_model():
-    folder = "E:\git\PycharmProjects\\NLP_Project\pickled\\w2vec-data.pickle"
+    folder = "pickled/w2vec-data.pickle"
     return gensim.models.KeyedVectors.load_word2vec_format(folder,
                                                        binary=True)
 def cosine_sim(u, v):

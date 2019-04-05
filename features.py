@@ -6,22 +6,21 @@ import os
 import corenlp
 import networkx as nx
 
+import utils
 from gensim.models import Word2Vec,KeyedVectors
 from nltk.tokenize import sent_tokenize, word_tokenize
 from sklearn.model_selection._split import _BaseKFold
-from utils import get_stanparse_data,get_stanford_idx,get_stanparse_depths,get_aligned_data,get_dataset,calc_depths,build_dep_graph,normalize_word,get_tokenized_lemmas,get_w2v_model,cosine_sim
-
-
-
 
 from logger import Logger
-from utils import cosine_similarity_by_vector, alignment_score
 from random import randint
+
 
 class FeatureExtraction():
 
     def __init__(self, logger):
         self.logger = logger
+        self.stanfordParseData = utils.get_stanparse_data()
+        self.ppdbLines = utils.getLinesFromFile(self.logger.config_dict['PPDB_PHRASAL'],'r')
 
     def get_BoW_feature(self, claim, headline):
 
@@ -51,29 +50,29 @@ class FeatureExtraction():
             return 0
 
     # RootDist Zhang
-    def rootDist(count):
+    def rootDist(self,count):
         VALID_STANCE_LABELS = ['for', 'against', 'observing']
 
         data_folder = os.path.join(os.path.dirname(__file__), 'emergent')
-        df_clean_train = get_dataset('url-versions-2015-06-14-clean-train.csv')
+        df_clean_train = utils.get_dataset('url-versions-2015-06-14-clean-train.csv')
         ##orginal code
         ##example = df_clean_train.ix[0, :]
         ##
         example = df_clean_train.ix[count, :]
-        dep_parse_data = get_stanparse_data()
+        dep_parse_data = utils.get_stanparse_data()
         example_parse = dep_parse_data[example.articleId]
         print(example_parse)
-        grph, grph_labels = build_dep_graph(example_parse['sentences'][0]['dependencies'])
+        grph, grph_labels = utils.build_dep_graph(example_parse['sentences'][0]['dependencies'])
         print("The grph is:", grph)
         example_parse['sentences'][0]['dependencies']
         print("The example_parse is", example_parse)
         print("the grph_label is:", grph_labels)
-        calc_depths(grph)
-        depths = get_stanparse_depths()
+        utils.calc_depths(grph)
+        depths = utils.get_stanparse_depths()
         d = depths['116a3920-c41c-11e4-883c-a7fa7a3c5066']
         print("the depths:", d)
 
-        sp_data = get_stanparse_data()
+        sp_data = utils.get_stanparse_data()
 
         more_than_one_sentence = [v for v in sp_data.values() if len(v['sentences']) > 1]
         more_than_one_sentence[count]
@@ -82,34 +81,34 @@ class FeatureExtraction():
     #################################################################
     # Neg Zhang
     #################################################################
-    def neg():
+    def neg(self):
         cId, aId = '4893f040-a5c6-11e4-aa4f-ff16e52e0d56', '53faf1e0-a5c6-11e4-aa4f-ff16e52e0d56'
-        aligned_data = get_aligned_data()
+        aligned_data = utils.get_aligned_data()
         print(aligned_data)
         aligned_data[(cId, aId)]
-        df = get_dataset()
+        df = utils.get_dataset()
         # print(df.shape)
         penis = df[df.articleId == aId]
         # print(penis)
-        claim = get_tokenized_lemmas(penis.claimHeadline[569])
+        claim = utils.get_tokenized_lemmas(penis.claimHeadline[569])
         print("the penis is:", penis.claimHeadline[569])
-        article = get_tokenized_lemmas(penis.articleHeadline[569])
+        article = utils.get_tokenized_lemmas(penis.articleHeadline[569])
         print("the claim is", claim)
         [(claim[i], article[j]) for (i, j) in aligned_data[(cId, aId)]]
         print(claim)
         print(article)
         # w2vec_model = get_w2v_model()
         # cosine_sim(w2vec_model['having'], w2vec_model['finding'])
-        stanparse_data = get_stanparse_data()
+        stanparse_data = utils.get_stanparse_data()
         stanparse_data[cId]['sentences'][0]['dependencies']
         stanparse_data[aId]['sentences']  # [0]['dependencies']
         # cosine(w2vec_model['safe'], w2vec_model['stolen'])
         stanparse_data['6d937d80-3c20-11e4-bc0b-3f922b93930d']['sentences'][0]['dependencies']
         stanparse_data['ee3af700-3ab9-11e4-bc0b-3f922b93930d']['sentences'][0]['dependencies']
-        get_tokenized_lemmas('not having a girlfriend')
+        utils.get_tokenized_lemmas('not having a girlfriend')
         s = 'because of not having a girlfriend'
         s.find('not')
-        toks = get_tokenized_lemmas(s)
+        toks = utils.get_tokenized_lemmas(s)
         # filter(lambda (i, t): t == 'not', enumerate(toks))
 
 
@@ -128,14 +127,14 @@ class FeatureExtraction():
             normalize_constant = len(headline.split())
 
         ppdb_lexical_file = self.logger.config_dict['PPDB_LEXICAL']
-        edges = [(i,j,alignment_score(ppdb_lexical_file, i,j)) for (i,j) in enumerate(word_pairs)]
+        edges = [(i,j,utils.alignment_score(ppdb_lexical_file, i,j)) for (i,j) in enumerate(word_pairs)]
         alignment_graph = nx.Graph()
         alignment_graph.add_nodes_from([word_pairs[i][0] for i in range(0,len(word_pairs))], bipartite=0)
         alignment_graph.add_nodes_from([word_pairs[i][1] for i in range(0, len(word_pairs))], bipartite=1)
         #alignment_graph.add_edges_from(edges)
         #[alignment_graph.add_edge(i,j,weight=alignment_score(ppdb_lexical_file, i, j)) for i, j in enumerate(word_pairs)]
         for i,j in enumerate(word_pairs):
-            alignment_graph.add_edge(i,j,weight=alignment_score(ppdb_lexical_file, i, j))
+            alignment_graph.add_edge(i,j,weight=utils.alignment_score(ppdb_lexical_file, i, j))
         # kuhn-munkers algo
         max_scorings = nx.max_weight_matching(alignment_graph)
         weights = [alignment_graph.get_edge_data(node_pair[0],node_pair[1]) for node_pair in max_scorings]
@@ -143,11 +142,37 @@ class FeatureExtraction():
 
 
 #SVO Priya
-    def get_svo_feature(selfself,claim, headline):
-        #get svo pair for claim and headline
+    def get_svo_feature(self,claim, headline):
+        df_clean_train = utils.get_dataset('url-versions-2015-06-14-clean-train.csv')
+        example_parse = self.stanfordParseData["116a3920-c41c-11e4-883c-a7fa7a3c5066"]
+        dependencies = example_parse["sentences"][0]["dependencies"]
+
+        #Get the SVO triples fro claim and headline
+        svoDict = {}
+        for index, sentence in [claim, headline]:
+            #get dependency of sentence from stanford TODO
+            svoDict[index]  = {}
+            for dependency in dependencies:
+                if dependency[0].lower() == "root":
+                    svoDict[index]["v"] = dependency[2][:len("-")]
+                elif svoDict[0].get("v") is not None:
+                    if ((dependency[0].lower() == "nn" or dependency[0].lower() == "nsubj") and svoDict[index]["v"] in dependency[1]):
+                        svoDict[index]["s"] = dependency[2][:len("-")]
+                    elif ((dependency[0].lower() == "dep" or dependency[0].lower() == "dobj") and svoDict[index]["v"] in dependency[1]):
+                        svoDict[index]["o"] = dependency[2][:len("-")]
 
         # for each svo pair get label
-        return
+        term = []
+        label = []
+        for svo in ["s","v","o"]:
+            searchPattern = ""
+            for index in svoDict.keys():
+                term[index] = svoDict[index][svo]
+                searchPattern = searchPattern + "\s*|||\s*" + term[index]
+            matches = re.findall(searchPattern,self.ppdbLines)
+            matchComponents = matches[0].split("|||")
+            label.append(matchComponents[5])
+        return label
 
 #word2vec Priya
     def get_word2vec_cosine_similarity(self, model, claim, headline):
@@ -213,7 +238,8 @@ class ClaimKFold(_BaseKFold):
         return self.n_folds
 
 
-#logger = Logger(show = True, html_output = True, config_file = "config.txt")
-#feature_extraction = FeatureExtraction(logger)
+logger = Logger(show = True, html_output = True, config_file = "config.txt")
+feature_extraction = FeatureExtraction(logger)
+feature_extraction.rootDist(2)
 #data_dict = {'this is an apple': 'the apple was red', 'Cherries are sweet': 'fruits are sweet'}
 #feature_extraction.compute_features(data_dict)
