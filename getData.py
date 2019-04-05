@@ -141,9 +141,9 @@ def preprocessDataset(dataset):
         #print(dataset[claimId])
         #preprocessString(dataset[claimId]['claim'])
 
-        print("ATTATAT")
-        print("Claim : " + dataset[claimId]['claim'])
-        print("Claim Id : " + str(claimId))
+        #print("ATTATAT")
+        #print("Claim : " + dataset[claimId]['claim'])
+        #print("Claim Id : " + str(claimId))
         
         # We process the claim
         dataset[claimId]['claim'] = preprocessString(dataset[claimId]["claim"])
