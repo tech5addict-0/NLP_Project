@@ -25,31 +25,30 @@ def getLinesFromFile(filePath, fileOption ):
         lines = f.readlines()
     return lines
 
+def load_ppdb_data():
+    with open("data/pickled/ppdb.pickle", 'rb') as f:
+        return pickle.load(f,encoding='latin1')
+
 def cosine_similarity_by_vector(vector1, vector2):
     return np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
 
-def alignment_score(file, word1, word2):
+def alignment_score(ppdbLines, word1, word2):
     stemmer = stem.SnowballStemmer("english")
     if(stemmer.stem(word1) == stemmer.stem(word2)):
         return MAX_ALIGNMENT_SCORE
     else:
-        return _paraphrase_score(file, word1, word2)
+        return _paraphrase_score(ppdbLines, word1, word2)
 
 
-def _paraphrase_score(file, word1, word2):
+def _paraphrase_score(ppdbLines, word1, word2):
     paraphrase_score = MIN_ALIGNMENT_SCORE
-    lines = getLinesFromFile(file,'r')
-    matches = re.findall(word1,lines)
-    if matches:
-        final_matches = re.findall(word2,matches)
-        if final_matches:
-            for line in final_matches:
-                match_build = line.split("|||")
-                if ((match_build[1] == word1 & match_build[2] == word2) | (match_build[1] == word2 & match_build[2] == word1)):
-                    metrics = [metric for metric in match_build[3].split(" ")]
-                    scorings = {key_val[0]: int(key_val[1]) for key_val in [scoring.split("=") for scoring in metrics]}
-                    paraphrase_score = -np.log(scorings['p(f|e)']) -np.log(scorings['p(f|e)']) - np.log(scorings['p(e|f,LHS)']) - np.log(scorings['p(f|e,LHS)']) + 0.3 * (-np.log(scorings['p(LHS|e)'])) + 0.3 * (-np.log(scorings['p(LHS|f)'])) + 100 * scorings['RarityPenalty']
+    #lines = getLinesFromFile(file,'r')
+    if ppdbLines.get(word1) != None:
+        tuples = [tup for tup in ppdbLines.get(word1) if tup[0] == word2]
+        if tuples:
+            paraphrase_score =  max(tuples)[1]
     return paraphrase_score
+
 
 
 def get_stanparse_data():
@@ -142,3 +141,18 @@ def getAllMetricsAndSave(nameClassifier,predLabels,testingLabels):
 
     acc = metrics.getAccuracy(confMat)
     return acc
+
+def calculate_overlap(claim,headline):
+    wordnet_lemmatizer = stem.WordNetLemmatizer()
+    punctuations = "?:!.,;"
+    lemmas = {0:[],1:[]}
+    item = 0
+    for sentence in [claim,headline]:
+        lemmas[item] = [wordnet_lemmatizer.lemmatize(word).lower() for word in nltk.word_tokenize(sentence) if word not in punctuations]
+        item = item + 1
+    common_lemma = set(lemmas[0]).intersection(lemmas[1])
+    union_lemma = set(lemmas[0]).union(lemmas[1])
+    overlap = float(len(common_lemma) / len(union_lemma))
+    return overlap
+
+

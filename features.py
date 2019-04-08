@@ -5,6 +5,8 @@ import nltk
 import os
 import corenlp
 import networkx as nx
+import stanfordnlp
+import json
 
 import utils
 from gensim.models import Word2Vec,KeyedVectors
@@ -19,7 +21,11 @@ class FeatureExtraction():
     def __init__(self, logger):
         self.logger = logger
         self.stanfordParseData = utils.get_stanparse_data()
-        self.ppdbLines = utils.getLinesFromFile(self.logger.config_dict['PPDB_PHRASAL'],'r')
+        self.nlp = stanfordnlp.Pipeline()
+        self.ppdbLines = utils.load_ppdb_data()
+        #self.word2vecModel = KeyedVectors.load_word2vec_format(self.logger.config_dict['GOOGLE_NEWS_VECTOR_FILE'], binary=True)
+        #self.word2vecModel = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True)
+        print("Done")
 
     def get_BoW_feature(self, claim, headline):
 
@@ -48,11 +54,11 @@ class FeatureExtraction():
             self.logger.log("Feature Question completed.")
             return 0
 
-    def get_key(dict, value):
+    def get_key(self,dict, value):
         return [k for k, v in dict.items() if v == value]
 
     # RootDist Zhang
-    def rootDist(claim,headline,count):
+    def rootDist(selft, claim,headline,count):
         df_clean_train = utils.get_dataset('url-versions-2015-06-14-clean-train.csv')
         example = df_clean_train.ix[count, :]
         dep_parse_data = utils.get_stanparse_data()
@@ -128,23 +134,32 @@ class FeatureExtraction():
         length_claim = len(claim.split())
         length_headline = len(headline.split())
 
-        word_pairs = [(c,h) for c in sent_tokenize(claim) for h in sent_tokenize(headline)]
+        claim_nodes = claim.lower().split()
+        headline_nodes = headline.lower().split()
+        word_pairs = [(c,h) for c in claim_nodes for h in headline_nodes]
+
         if(length_claim < length_headline):
-            word_pairs.append([(dummy_word, word) for word in headline.split()])
+            num_words_to_add = length_headline - length_claim
+            dummy_words = [dummy_word+str(i) for i in range(0,num_words_to_add)]
+            [word_pairs.append((dummy_word,word)) for dummy_word in dummy_words for word in headline_nodes]
+            claim_nodes = claim_nodes + dummy_words
             normalize_constant = length_claim
         else:
-            word_pairs.append([(word, dummy_word) for word in claim.split()])
-            normalize_constant = len(headline.split())
+            num_words_to_add = length_claim - length_headline
+            dummy_words = [dummy_word + str(i) for i in range(0, num_words_to_add)]
+            [word_pairs.append((word, dummy_word)) for word in claim_nodes for dummy_word in dummy_words]
+            headline_nodes = headline_nodes + dummy_words
+            normalize_constant = length_headline
 
-        ppdb_lexical_file = self.logger.config_dict['PPDB_LEXICAL']
-        edges = [(i,j,utils.alignment_score(ppdb_lexical_file, i,j)) for (i,j) in enumerate(word_pairs)]
+        #ppdb_lexical_file = self.logger.config_dict['PPDB_LEXICAL']
+        ppdb_lexical_file = "../ppdb-2.0-tldr"
         alignment_graph = nx.Graph()
-        alignment_graph.add_nodes_from([word_pairs[i][0] for i in range(0,len(word_pairs))], bipartite=0)
-        alignment_graph.add_nodes_from([word_pairs[i][1] for i in range(0, len(word_pairs))], bipartite=1)
-        #alignment_graph.add_edges_from(edges)
-        #[alignment_graph.add_edge(i,j,weight=alignment_score(ppdb_lexical_file, i, j)) for i, j in enumerate(word_pairs)]
-        for i,j in enumerate(word_pairs):
-            alignment_graph.add_edge(i,j,weight=utils.alignment_score(ppdb_lexical_file, i, j))
+        nodes = {i:j for i, j in enumerate(claim_nodes + headline_nodes)}
+        alignment_graph.add_nodes_from(list(range(0,len(claim_nodes))), bipartite=0)
+        alignment_graph.add_nodes_from(list(range(len(claim_nodes),2*len(claim_nodes))), bipartite=1)
+        for i in list(range(0, len(claim_nodes))):
+            for j in list(range(len(claim_nodes), 2 * len(claim_nodes))):
+                alignment_graph.add_edge(i, j, weight=utils.alignment_score(self.ppdbLines, nodes[i], nodes[j]))
         # kuhn-munkers algo
         max_scorings = nx.max_weight_matching(alignment_graph)
         weights = [alignment_graph.get_edge_data(node_pair[0],node_pair[1]) for node_pair in max_scorings]
@@ -153,47 +168,43 @@ class FeatureExtraction():
 
 #SVO Priya
     def get_svo_feature(self,claim, headline):
-        df_clean_train = utils.get_dataset('url-versions-2015-06-14-clean-train.csv')
-        example_parse = self.stanfordParseData["116a3920-c41c-11e4-883c-a7fa7a3c5066"]
-        dependencies = example_parse["sentences"][0]["dependencies"]
-
         #Get the SVO triples fro claim and headline
-        svoDict = {}
-        for index, sentence in [claim, headline]:
-            #get dependency of sentence from stanford TODO
-            svoDict[index]  = {}
-            for dependency in dependencies:
-                if dependency[0].lower() == "root":
-                    svoDict[index]["v"] = dependency[2][:len("-")]
-                elif svoDict[0].get("v") is not None:
-                    if ((dependency[0].lower() == "nn" or dependency[0].lower() == "nsubj") and svoDict[index]["v"] in dependency[1]):
-                        svoDict[index]["s"] = dependency[2][:len("-")]
-                    elif ((dependency[0].lower() == "dep" or dependency[0].lower() == "dobj") and svoDict[index]["v"] in dependency[1]):
-                        svoDict[index]["o"] = dependency[2][:len("-")]
+        svoDict = {0:{}, 1:{}}
+        items = 0
+        for sentence in [claim, headline]:
+            doc = self.nlp(sentence)
+            allDependencies = doc.sentences[0].dependencies
+            for count,dependency in enumerate(allDependencies):
+                if dependency[1].lower() == "root":
+                    svoDict[items]["v"] = dependency[2].text
+                elif (dependency[1].lower() == "nn" or dependency[1].lower() == "nsubj"):
+                    svoDict[items]["s"] = dependency[2].text
+                elif (dependency[1].lower() == "dep" or dependency[1].lower() == "obj"):
+                        svoDict[items]["o"] = dependency[2].text
+            items = items + 1
 
         # for each svo pair get label
-        term = []
         label = []
         for svo in ["s","v","o"]:
-            searchPattern = ""
-            for index in svoDict.keys():
-                term[index] = svoDict[index][svo]
-                searchPattern = searchPattern + "\s*|||\s*" + term[index]
-            matches = re.findall(searchPattern,self.ppdbLines)
-            matchComponents = matches[0].split("|||")
-            label.append(matchComponents[5])
+            try:
+                c_word = svoDict[0][svo]
+                h_word = svoDict[1][svo]
+                if self.ppdbLines.get(c_word) != None:
+                    tuples = [tup for tup in self.ppdbLines.get(c_word) if tup[0] == h_word]
+                label.append(tuples[0][2])
+            except (KeyError, IndexError, UnboundLocalError,IndexError):
+                label.append("noRelation")
+                continue
         return label
 
 #word2vec Priya
-    def get_word2vec_cosine_similarity(self, model, claim, headline):
-        headline_vectors = [model.wv[word] for word in headline.lower().split()]
+    def get_word2vec_cosine_similarity(self, claim, headline):
+        headline_vectors = [self.word2vecModel.wv[word] for word in headline.lower().split()]
         headline_vector = np.prod(headline_vectors, axis=0)
 
-        claim_vectors = [model.wv[word] for word in claim.lower().split()]
+        claim_vectors = [self.word2vecModel.wv[word] for word in claim.lower().split()]
         claim_vector = np.prod(claim_vectors, axis=0)
         return utils.cosine_similarity_by_vector(claim_vector, headline_vector)
-
-
 
 
     #need to confirm how data is passed here
@@ -201,27 +212,33 @@ class FeatureExtraction():
         self.logger.log("Start computing features...")
         features = []
         count = 0
-       #iteration over each row will change based on datastructure
-        for claim,headline in enumerate(data_dict.items()):
-            bow = self.get_BoW_feature( claim, headline)
-            q = self.get_question_feature( claim, headline)
-            root_dist = self.rootDist(claim,headline,count)
-            neg = self.neg(claim,headline)
-            ppdb = self.get_ppdb_feature(claim,headline)
-            svo = self.get_svo_feature(claim, headline)
+        for claimId in data_dict:
+            for articleId in data_dict[claimId]["articles"]:
+                article = data_dict[claimId]["articles"][articleId]
+                stance = article[1]
+                headline = article[0]
+                claim = data_dict[claimId]["claim"]
 
-            #model = KeyedVectors.load_word2vec_format(self.logger.config_dict['GOOGLE_NEWS_VECTOR_FILE'], binary=True)
-            model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True)
+                #get all the features for the claim and headline
+                # bow = self.get_BoW_feature( claim, headline)
+                # q = self.get_question_feature( claim, headline)
+                # root_dist = self.rootDist(claim,headline,count)
+                # neg = self.neg(claim,headline)
+                #ppdb = self.get_ppdb_feature(claim,headline)
+                svo = self.get_svo_feature(claim, headline)
 
-            word2vec_feature = self.get_word2vec_cosine_similarity(model, claim, headline)
-            #features.append([bow, q, root_dist, neg, ppdb, svo, word2vec_feature])
-            features.append([word2vec_feature])
-            count = count + 1
-        #colnames = ["BoW","Q","RootDist","Neg","PPDB","SVO","word2vec"]
-        colnames = ["word2vec"]
+                #model = KeyedVectors.load_word2vec_format(self.logger.config_dict['GOOGLE_NEWS_VECTOR_FILE'], binary=True)
+                #model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True)
+
+                #word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
+                #features.append([bow, q, root_dist, neg, ppdb, svo, word2vec_feature, stance, claimId])
+                features.append([svo, stance,claimId])
+                count = count + 1
+        #colnames = ["BoW","Q","RootDist","Neg","PPDB","SVO","word2vec","stance", "claimId"]
+        colnames = ["svo","stance", "claimId"]
         self.logger.log("Finished computing features", show_time=True)
 
-        return pd.DataFrame(features,colnames = colnames)
+        return pd.DataFrame(features,columns = colnames)
 
 
     def compute_features(self,data_dict):
@@ -246,10 +263,28 @@ class ClaimKFold(_BaseKFold):
     def __len__(self):
         return self.n_folds
 
-claim = "Apple will sell 19 million Apple Watches in 2015"
-headline = "BMO forecasts 19M Apple Watch sales in 2015, with more than half selling in holiday season"
-FeatureExtraction.rootDist(claim,headline,0)
-#logger = Logger(show = True, html_output = True, config_file = "config.txt")
+
+# claim = "Apple will sell 19 million Apple Watches in 2015"
+# headline = "BMO forecasts 19M Apple Watch sales in 2015, with more than half selling in holiday season"
+# FeatureExtraction.rootDist(claim,headline,0)
+logger = Logger(show = True, html_output = True, config_file = "config.txt")
 #feature_extraction = FeatureExtraction(logger)
 #data_dict = {'this is an apple': 'the apple was red', 'Cherries are sweet': 'fruits are sweet'}
 #feature_extraction.compute_features(data_dict)
+
+# with open('datasets/dataset.json','r') as json_file:
+#    dataset = json.load(json_file)
+# fe = FeatureExtraction(logger)
+# logger.log("Starting", show_time=True)
+# print("starting")
+# df = fe.compute_features2(dataset)
+
+# with open('datasets/dataset.json','r') as json_file:
+#    dataset = json.load(json_file)
+# bs = BaselineClassifier()
+# # over = bs.getOverlaps(dataset)
+# # over.to_csv("results/baseline.csv")
+# basec = pd.read_csv("results/baseline.csv")
+# thresholds = bs.calculate_classifier_thresholds(basec)
+# pred = bs.predict(thresholds,basec['overlap'])
+
