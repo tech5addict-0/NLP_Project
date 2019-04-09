@@ -1,4 +1,4 @@
 ,Accuracy
-BaselineClassifier,0.3125
-LogisticClassifier,0.7039473684210527
-SVM,0.4440789473684211
+BaselineClassifier,0.37890625
+LogisticClassifier,0.748046875
+SVM,0.482421875

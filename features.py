@@ -258,9 +258,9 @@ class ClaimKFold(_BaseKFold):
     def __len__(self):
         return self.n_folds
 
-logger = Logger(show = True, html_output = True, config_file = "config.txt")
-fe = FeatureExtraction(logger)
-minD = fe.rootDist("20-Year-Old Quarter Pounder Looks About the Same")
+#logger = Logger(show = True, html_output = True, config_file = "config.txt")
+#fe = FeatureExtraction(logger)
+#minD = fe.rootDist("20-Year-Old Quarter Pounder Looks About the Same")
 #svo = fe.get_svo_feature("Barack Obama was born in Hawaii", "He was on drugs")
 #neg = fe.neg("a","b")
 #w2v = fe.get_word2vec_cosine_similarity("Barack Obama was born in Hawaii", "He was on drugs")
