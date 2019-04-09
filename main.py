@@ -25,6 +25,9 @@ feature_extraction = features.FeatureExtraction(logger)
 #TODO if features are already calculated, read it from the directory instead
 featuresDataset = feature_extraction.compute_features(dataset)
 
+# Save features
+featuresDataset.to_csv("datasets/features.csv")
+
 
 # Cut in train, test, validation set
 (trainingClaimSet, validationClaimSet, testingClaimSet) = getData.cutTrainTestValidationSet(dataset, 0.7, 0.1)

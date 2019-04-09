@@ -208,11 +208,12 @@ class FeatureExtraction():
 
 
 
-    def compute_features2(self,data_dict):
+    def compute_features(self,data_dict):
         self.logger.log("Start computing features...")
         features = []
         count = 0
         for claimId in data_dict:
+            print(data_dict[claimId]["claim"])
             for articleId in data_dict[claimId]["articles"]:
                 article = data_dict[claimId]["articles"][articleId]
                 stance = article[1]
@@ -227,13 +228,12 @@ class FeatureExtraction():
                 ppdb = self.get_ppdb_feature(claim,headline)
                 svo = self.get_svo_feature(claim, headline)
                 #word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
-                #features.append([bow, q, root_dist, neg, ppdb, svo, word2vec_feature, stance, claimId])
-                features.append([bow, q,ppdb,svo, stance,claimId])
+                features.append(list(bow) + [q,ppdb] + list(svo) + [stance,claimId])
                 count = count + 1
         #colnames = ["BoW","Q","RootDist","Neg","PPDB","SVO","word2vec","stance", "claimId"]
-        colnames = ["BoW","Q","PPDB","SVO","stance", "claimId"]
+        #colnames = ["BoW","Q","PPDB","SVO","stance", "claimId"]
         self.logger.log("Finished computing features", show_time=True)
-        return pd.DataFrame(features,columns = colnames)
+        return pd.DataFrame(features)
 
 class ClaimKFold(_BaseKFold):
     def __init__(self, data, n_folds=10, shuffle=False):
