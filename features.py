@@ -5,6 +5,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 import stanfordnlp
+from gensim.models import KeyedVectors
 from sklearn.model_selection._split import _BaseKFold
 from nltk.parse.stanford import StanfordDependencyParser as sdp
 from nltk.parse.corenlp import CoreNLPDependencyParser
@@ -22,8 +23,7 @@ class FeatureExtraction():
         self.stanfordParseData = utils.get_stanparse_data()
         self.nlp = stanfordnlp.Pipeline()
         self.ppdbLines = utils.load_ppdb_data()
-        #self.word2vecModel = KeyedVectors.load_word2vec_format(self.logger.config_dict['GOOGLE_NEWS_VECTOR_FILE'], binary=True)
-        #self.word2vecModel = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True)
+        self.word2vecModel = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True, limit=500000)
         rawWords = utils.get_rootDist_words()
         self.rootDistWords = [word.strip() for word in rawWords]
         self.svoMapping = {
@@ -33,7 +33,7 @@ class FeatureExtraction():
             "independence" : 4,
             "noRelation" : 5
         }
-        print("Done")
+        print("Initialisation complete")
 
     def get_BoW_feature(self, claim, headline, bag):
 
@@ -188,11 +188,24 @@ class FeatureExtraction():
 
 #word2vec Priya
     def get_word2vec_cosine_similarity(self, claim, headline):
-        headline_vectors = [self.word2vecModel.wv[word] for word in headline.lower().split()]
+        headline_vectors = []
+        for word in headline.lower().split():
+            try:
+                h_vector_array = self.word2vecModel.wv[word]
+            except KeyError:
+                h_vector_array = np.ones(300)
+            headline_vectors.append(h_vector_array)
         headline_vector = np.prod(headline_vectors, axis=0)
 
-        claim_vectors = [self.word2vecModel.wv[word] for word in claim.lower().split()]
+        claim_vectors = []
+        for word in claim.lower().split():
+            try:
+                c_vector_array = self.word2vecModel.wv[word]
+            except KeyError:
+                c_vector_array = np.ones(300)
+            claim_vectors.append(c_vector_array)
         claim_vector = np.prod(claim_vectors, axis=0)
+
         return utils.cosine_similarity_by_vector(claim_vector, headline_vector)
 
 
@@ -237,5 +250,7 @@ class ClaimKFold(_BaseKFold):
 
 logger = Logger(show = True, html_output = True, config_file = "config.txt")
 fe = FeatureExtraction(logger)
-#minD = fe.rootDist("Barack Obama was born in Hawaii")
+minD = fe.rootDist("Would you take a bite out of the world's oldest burger? Men keep Quarter Pounder they bought 20 YEARS ago for a friend who never showed up to meet them")
 #svo = fe.get_svo_feature("Barack Obama was born in Hawaii", "He was on drugs")
+#neg = fe.neg("a","b")
+#w2v = fe.get_word2vec_cosine_similarity("Barack Obama was born in Hawaii", "He was on drugs")
