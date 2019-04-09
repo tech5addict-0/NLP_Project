@@ -163,6 +163,19 @@ def calculate_overlap(claim,headline):
     overlap = float(len(common_lemma) / len(union_lemma))
     return overlap
 
+def createBagTrain(data_dict):
+    bag = []
+    for claimId in data_dict:
+        for article in data_dict[claimId]["articles"]:
+            headline = data_dict[claimId]["articles"][article][0]
+            wordsHeadline = re.sub("[^\w]", " ", headline).split()
+            wordsHeadline_cleaned = [w.lower() for w in wordsHeadline]
+            for w in wordsHeadline_cleaned:
+                if w not in bag:
+                    bag.append(w)
+    bag = sorted(list(set(bag)))
+    return bag
+
 def get_rootDist_words():
     with open("hedgeWords.txt", 'r') as f:
         lines = f.readlines()

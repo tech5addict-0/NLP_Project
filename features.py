@@ -34,25 +34,20 @@ class FeatureExtraction():
         }
         print("Done")
 
-
-    def get_BoW_feature(self, claim, headline):
-
-        wordsClaim = re.sub("[^\w]", " ", claim).split()
-        wordsClaim_cleaned = [w.lower() for w in wordsClaim]
-        wordsClaim_cleaned = sorted(list(set(wordsClaim_cleaned)))
+    def get_BoW_feature(self, claim, headline, bag):
 
         wordsHeadline = re.sub("[^\w]", " ", headline).split()
         wordsHeadline_cleaned = [w.lower() for w in wordsHeadline]
         wordsHeadline_cleaned = sorted(list(set(wordsHeadline_cleaned)))
 
-        bag = np.zeros(len(wordsClaim_cleaned))
+        result = [0 for i in range(len(bag))]
         for hw in wordsHeadline_cleaned:
-            for i, cw in enumerate(wordsClaim_cleaned):
+            for i, cw in enumerate(bag):
                 if hw == cw:
-                    bag[i] += 1
+                    result[i] += 1
 
         self.logger.log("Feature Bag of Words completed.")
-        return np.array(bag)
+        return result
 
     def get_question_feature(self, claim, headline):
         if "?" in headline:
@@ -233,10 +228,12 @@ class FeatureExtraction():
         return utils.cosine_similarity_by_vector(claim_vector, headline_vector)
 
 
+
     def compute_features(self,data_dict):
         self.logger.log("Start computing features...")
         features = []
         count = 0
+        bag = utils.createBagTrain(data_dict)
         for claimId in data_dict:
             for articleId in data_dict[claimId]["articles"]:
                 article = data_dict[claimId]["articles"][articleId]
@@ -245,7 +242,7 @@ class FeatureExtraction():
                 claim = data_dict[claimId]["claim"]
 
                 #get all the features for the claim and headline
-                bow = self.get_BoW_feature( claim, headline)
+                bow = self.get_BoW_feature( claim, headline, bag)
                 q = self.get_question_feature( claim, headline)
                 root_dist = self.rootDist(self,headline)
                 # neg = self.neg(claim,headline)
