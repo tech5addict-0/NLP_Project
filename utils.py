@@ -50,7 +50,7 @@ def _paraphrase_score(ppdbLines, word1, word2):
     return paraphrase_score
 
 
-
+#TODO remove
 def get_stanparse_data():
     with open(_pickled_data_folder, 'rb') as f:
         return pickle.load(f)
@@ -59,14 +59,17 @@ def get_stanford_idx(x):
     i = x.rfind('-')
     return x[:i].lower(), int(x[(i+1):])
 
+#TODO remove
 def get_stanparse_depths():
     with open(_pickled_data_folder3, 'rb') as f:
         return pickle.load(f)
 
+#TODO remove
 def get_aligned_data():
     with open(_pickled_data_folder2, 'rb') as f:
         return pickle.load(f)
 
+#TODO remove
 def get_dataset(filename='url-versions-2015-06-14-clean.csv'):
     folder = "emergent/url-versions-2015-06-14-clean.csv"
     return pd.read_csv(os.path.join(folder))
@@ -93,22 +96,27 @@ def build_dep_graph(deps):
         dep_graph_labels[(head_idx, dep_idx)] = rel
     return dep_graph, dep_graph_labels
 
+#TODO remove
 def normalize_word(w):
     #nltk.download('punkt')
     #nltk.download('wordnet')
     _wnl = nltk.WordNetLemmatizer()
     return _wnl.lemmatize(w).lower()
 
+#TODO remove
 def get_tokenized_lemmas(s):
     return [normalize_word(t) for t in nltk.word_tokenize(s)]
 
 ###############################################################
 #Neg
 ###############################################################
+
+#TODO remove
 def get_w2v_model():
     folder = "pickled/w2vec-data.pickle"
     return gensim.models.KeyedVectors.load_word2vec_format(folder,
                                                        binary=True)
+#TODO remove
 def cosine_sim(u, v):
     """Returns the cosine similarity between two 1-D vectors, u and v"""
     return np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))
@@ -144,11 +152,11 @@ def getAllMetricsAndSave(nameClassifier,predLabels,testingLabels):
 
 def calculate_overlap(claim,headline):
     wordnet_lemmatizer = stem.WordNetLemmatizer()
-    punctuations = "?:!.,;"
+    puncts = ".,;?:!"
     lemmas = {0:[],1:[]}
     item = 0
     for sentence in [claim,headline]:
-        lemmas[item] = [wordnet_lemmatizer.lemmatize(word).lower() for word in nltk.word_tokenize(sentence) if word not in punctuations]
+        lemmas[item] = [wordnet_lemmatizer.lemmatize(word).lower() for word in nltk.word_tokenize(sentence) if word not in puncts]
         item = item + 1
     common_lemma = set(lemmas[0]).intersection(lemmas[1])
     union_lemma = set(lemmas[0]).union(lemmas[1])

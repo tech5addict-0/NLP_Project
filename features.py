@@ -1,20 +1,18 @@
+import re
+from random import randint
+
+import networkx as nx
 import numpy as np
 import pandas as pd
-import re
-import nltk
-import os
-import corenlp
-import networkx as nx
 import stanfordnlp
-import json
+from sklearn.model_selection._split import _BaseKFold
+from nltk.parse.stanford import StanfordDependencyParser as sdp
+from nltk.parse.corenlp import CoreNLPDependencyParser
+from nltk.parse.dependencygraph import DependencyGraph
 
 import utils
-from gensim.models import Word2Vec,KeyedVectors
-from nltk.tokenize import sent_tokenize, word_tokenize
-from sklearn.model_selection._split import _BaseKFold
-
 from logger import Logger
-from random import randint
+
 
 class FeatureExtraction():
 
@@ -58,7 +56,7 @@ class FeatureExtraction():
         return [k for k, v in dict.items() if v == value]
 
     # RootDist Zhang
-    def rootDist(selft, claim,headline,count):
+    def rootDist_old(self, claim,headline,count):
         df_clean_train = utils.get_dataset('url-versions-2015-06-14-clean-train.csv')
         example = df_clean_train.ix[count, :]
         dep_parse_data = utils.get_stanparse_data()
@@ -89,6 +87,8 @@ class FeatureExtraction():
         u_depent = more_than_one_sentence[count]
         print(u_depent['sentences'][0]['dependencies'])
         print(more_than_one_sentence[count])
+
+
 
     #################################################################
     # Neg Zhang
@@ -207,7 +207,7 @@ class FeatureExtraction():
         return utils.cosine_similarity_by_vector(claim_vector, headline_vector)
 
 
-    #need to confirm how data is passed here
+
     def compute_features2(self,data_dict):
         self.logger.log("Start computing features...")
         features = []
@@ -220,38 +220,20 @@ class FeatureExtraction():
                 claim = data_dict[claimId]["claim"]
 
                 #get all the features for the claim and headline
-                # bow = self.get_BoW_feature( claim, headline)
-                # q = self.get_question_feature( claim, headline)
-                # root_dist = self.rootDist(claim,headline,count)
+                bow = self.get_BoW_feature( claim, headline)
+                q = self.get_question_feature( claim, headline)
+                #root_dist = self.rootDist(claim,headline,count)
                 # neg = self.neg(claim,headline)
-                #ppdb = self.get_ppdb_feature(claim,headline)
+                ppdb = self.get_ppdb_feature(claim,headline)
                 svo = self.get_svo_feature(claim, headline)
-
-                #model = KeyedVectors.load_word2vec_format(self.logger.config_dict['GOOGLE_NEWS_VECTOR_FILE'], binary=True)
-                #model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True)
-
                 #word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
                 #features.append([bow, q, root_dist, neg, ppdb, svo, word2vec_feature, stance, claimId])
-                features.append([svo, stance,claimId])
+                features.append([bow, q,ppdb,svo, stance,claimId])
                 count = count + 1
         #colnames = ["BoW","Q","RootDist","Neg","PPDB","SVO","word2vec","stance", "claimId"]
-        colnames = ["svo","stance", "claimId"]
+        colnames = ["BoW","Q","PPDB","SVO","stance", "claimId"]
         self.logger.log("Finished computing features", show_time=True)
-
         return pd.DataFrame(features,columns = colnames)
-
-
-    def compute_features(self,data_dict):
-        #print(data_dict)
-        features = []
-        #print(data_dict)
-        for claimId in data_dict:
-            #print(data_dict[claimId])
-            for article in data_dict[claimId]["articles"]:
-                stance = data_dict[claimId]["articles"][article][1]
-                features.append([randint(1,20), randint(1,20), stance, claimId])
-        colNames = ["feat1", "feat2", "stance", "claimId"]
-        return pd.DataFrame(features, columns=colNames)
 
 class ClaimKFold(_BaseKFold):
     def __init__(self, data, n_folds=10, shuffle=False):
@@ -262,29 +244,4 @@ class ClaimKFold(_BaseKFold):
 
     def __len__(self):
         return self.n_folds
-
-
-# claim = "Apple will sell 19 million Apple Watches in 2015"
-# headline = "BMO forecasts 19M Apple Watch sales in 2015, with more than half selling in holiday season"
-# FeatureExtraction.rootDist(claim,headline,0)
-logger = Logger(show = True, html_output = True, config_file = "config.txt")
-#feature_extraction = FeatureExtraction(logger)
-#data_dict = {'this is an apple': 'the apple was red', 'Cherries are sweet': 'fruits are sweet'}
-#feature_extraction.compute_features(data_dict)
-
-# with open('datasets/dataset.json','r') as json_file:
-#    dataset = json.load(json_file)
-# fe = FeatureExtraction(logger)
-# logger.log("Starting", show_time=True)
-# print("starting")
-# df = fe.compute_features2(dataset)
-
-# with open('datasets/dataset.json','r') as json_file:
-#    dataset = json.load(json_file)
-# bs = BaselineClassifier()
-# # over = bs.getOverlaps(dataset)
-# # over.to_csv("results/baseline.csv")
-# basec = pd.read_csv("results/baseline.csv")
-# thresholds = bs.calculate_classifier_thresholds(basec)
-# pred = bs.predict(thresholds,basec['overlap'])
 
