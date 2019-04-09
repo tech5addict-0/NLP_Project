@@ -164,7 +164,7 @@ def calculate_overlap(claim,headline):
     return overlap
 
 def createBagTrain(data_dict):
-    bag = np.array
+    bag = []
 
     for claimId in data_dict:
         for article in data_dict[claimId]["articles"]:
@@ -173,6 +173,6 @@ def createBagTrain(data_dict):
             wordsHeadline_cleaned = [w.lower() for w in wordsHeadline]
             for w in wordsHeadline_cleaned:
                 if w not in bag:
-                    bag.add(w)
+                    bag.append(w)
     bag = sorted(list(set(bag)))
     return bag
