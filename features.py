@@ -9,9 +9,8 @@ from gensim.models import Word2Vec,KeyedVectors
 from nltk.tokenize import sent_tokenize, word_tokenize
 from sklearn.model_selection._split import _BaseKFold
 from utils import get_stanparse_data,get_stanford_idx,get_stanparse_depths,get_aligned_data,get_dataset,calc_depths,build_dep_graph,normalize_word,get_tokenized_lemmas,get_w2v_model,cosine_sim
-
-
-
+from pycorenlp import StanfordCoreNLP
+import stanfordnlp
 
 from logger import Logger
 from utils import cosine_similarity_by_vector, alignment_score
@@ -58,7 +57,7 @@ class FeatureExtraction():
         example = df_clean_train.ix[count, :]
         dep_parse_data = get_stanparse_data()
         example_parse = dep_parse_data[example.articleId]
-        #print(corenlp.ParseTree(claim))
+        #print(corenlp.to_text())
         print(example_parse)
         grph, grph_labels = build_dep_graph(example_parse['sentences'][0]['dependencies'])
         print("The grph is:", grph)
@@ -88,42 +87,19 @@ class FeatureExtraction():
     #################################################################
     # Neg Zhang
     #################################################################
-    def neg(self,claim,headline):
-        count = 0
-        #cId, aId = '4893f040-a5c6-11e4-aa4f-ff16e52e0d56', '53faf1e0-a5c6-11e4-aa4f-ff16e52e0d56'
-        df_clean_train = get_dataset('url-versions-2015-06-14-clean-train.csv')
-        example = df_clean_train.ix[count, :]
-        cId, aId = example.claimId,example.articleId
-        aligned_data = get_aligned_data()
-        print(aligned_data)
-        aligned_data[(cId, aId)]
-        df = get_dataset()
-        # print(df.shape)
-        pen = df[df.articleId == aId]
-        # print(pen)
-        claim = get_tokenized_lemmas(pen.claimHeadline[569])
-        print("the penis is:", pen.claimHeadline[569])
-        article = get_tokenized_lemmas(pen.articleHeadline[569])
-        print("the claim is", claim)
-        [(claim[i], article[j]) for (i, j) in aligned_data[(cId, aId)]]
-        print(claim)
-        print(article)
-        w2vec_model = get_w2v_model()
-        # cosine_sim(w2vec_model['having'], w2vec_model['finding'])
-        stanparse_data = get_stanparse_data()
-        stanparse_data[cId]['sentences'][0]['dependencies']
-        stanparse_data[aId]['sentences']  # [0]['dependencies']
-        # cosine(w2vec_model['safe'], w2vec_model['stolen'])
-        stanparse_data['6d937d80-3c20-11e4-bc0b-3f922b93930d']['sentences'][0]['dependencies']
-        stanparse_data['ee3af700-3ab9-11e4-bc0b-3f922b93930d']['sentences'][0]['dependencies']
-        get_tokenized_lemmas('not having a girlfriend')
-        s = 'because of not having a girlfriend'
-        s.find('not')
-        toks = get_tokenized_lemmas(s)
-        # filter(lambda (i, t): t == 'not', enumerate(toks))
+    def neg(count,claim,headline):
+        dummy_word = ";"
 
+        claim = "Apple will sell 19 million Apple Watches in 2015"
+        headline = "BMO forecasts 19M Apple Watch sales in 2015, with more than half selling in holiday season"
+        length_claim = len(claim.split())
+        length_headline = len(headline.split())
+        stanfordnlp.download('en')
+        nlp = stanfordnlp.Pipeline()
+        doc = nlp(claim)
+        doc.sentences[0].print_dependencies()
 
-#PPDB Priya
+    #PPDB Priya
     def get_ppdb_feature(self, claim, headline):
         dummy_word = ";"
         length_claim = len(claim.split())
@@ -223,7 +199,7 @@ class ClaimKFold(_BaseKFold):
 
 claim = "Apple will sell 19 million Apple Watches in 2015"
 headline = "BMO forecasts 19M Apple Watch sales in 2015, with more than half selling in holiday season"
-FeatureExtraction.rootDist(claim,headline,0)
+FeatureExtraction.neg(0,claim,headline)
 #logger = Logger(show = True, html_output = True, config_file = "config.txt")
 #feature_extraction = FeatureExtraction(logger)
 #data_dict = {'this is an apple': 'the apple was red', 'Cherries are sweet': 'fruits are sweet'}
