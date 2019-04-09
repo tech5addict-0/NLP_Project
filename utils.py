@@ -165,7 +165,6 @@ def calculate_overlap(claim,headline):
 
 def createBagTrain(data_dict):
     bag = []
-
     for claimId in data_dict:
         for article in data_dict[claimId]["articles"]:
             headline = data_dict[claimId]["articles"][article][0]
@@ -176,3 +175,9 @@ def createBagTrain(data_dict):
                     bag.append(w)
     bag = sorted(list(set(bag)))
     return bag
+
+def get_rootDist_words():
+    with open("hedgeWords.txt", 'r') as f:
+        lines = f.readlines()
+
+
