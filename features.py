@@ -229,12 +229,12 @@ class FeatureExtraction():
                 # neg = self.neg(claim,headline)
                 ppdb = self.get_ppdb_feature(claim,headline)
                 svo = self.get_svo_feature(claim, headline)
-                #word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
+                word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
                 #features.append([bow, q, root_dist, neg, ppdb, svo, word2vec_feature, stance, claimId])
-                features.append([bow, q, root_dist, ppdb,svo, stance,claimId])
+                features.append([bow, q, root_dist, ppdb,svo, word2vec_feature, stance,claimId])
                 count = count + 1
         #colnames = ["BoW","Q","RootDist","Neg","PPDB","SVO","word2vec","stance", "claimId"]
-        colnames = ["BoW","Q","RootDist","PPDB","SVO","stance", "claimId"]
+        colnames = ["BoW","Q","RootDist","PPDB","SVO", "word2vec","stance", "claimId"]
         self.logger.log("Finished computing features", show_time=True)
         return pd.DataFrame(features,columns = colnames)
 
