@@ -7,13 +7,9 @@ import pandas as pd
 import stanfordnlp
 from gensim.models import KeyedVectors
 from sklearn.model_selection._split import _BaseKFold
-from nltk.parse.stanford import StanfordDependencyParser as sdp
-from nltk.parse.corenlp import CoreNLPDependencyParser
-from nltk.parse.dependencygraph import DependencyGraph
-from pntl.tools import Annotator
-
 import utils
 from logger import Logger
+
 
 
 class FeatureExtraction():
@@ -82,47 +78,15 @@ class FeatureExtraction():
             root_dist = min(root_dists)
         return root_dist
 
-
-    def neg(self,claim,headline):
-        count = 0
-        #cId, aId = '4893f040-a5c6-11e4-aa4f-ff16e52e0d56', '53faf1e0-a5c6-11e4-aa4f-ff16e52e0d56'
-        df_clean_train = utils.get_dataset('url-versions-2015-06-14-clean-train.csv')
-        example = df_clean_train.ix[count, :]
-        cId, aId = example.claimId,example.articleId
-        aligned_data = utils.get_aligned_data()
-        print(aligned_data)
-        aligned_data[(cId, aId)]
-        df = utils.get_dataset()
-        # print(df.shape)
-        pen = df[df.articleId == aId]
-        # print(pen)
-        claim = utils.get_tokenized_lemmas(pen.claimHeadline[569])
-        print("the penis is:", pen.claimHeadline[569])
-        article = utils.get_tokenized_lemmas(pen.articleHeadline[569])
-        print("the claim is", claim)
-        [(claim[i], article[j]) for (i, j) in aligned_data[(cId, aId)]]
-        print(claim)
-        print(article)
-        w2vec_model = utils.get_w2v_model()
-        # cosine_sim(w2vec_model['having'], w2vec_model['finding'])
-        stanparse_data = utils.get_stanparse_data()
-        stanparse_data[cId]['sentences'][0]['dependencies']
-        stanparse_data[aId]['sentences']  # [0]['dependencies']
-        # cosine(w2vec_model['safe'], w2vec_model['stolen'])
-        stanparse_data['6d937d80-3c20-11e4-bc0b-3f922b93930d']['sentences'][0]['dependencies']
-        stanparse_data['ee3af700-3ab9-11e4-bc0b-3f922b93930d']['sentences'][0]['dependencies']
-        utils.get_tokenized_lemmas('not having a girlfriend')
-        s = 'because of not having a girlfriend'
-        s.find('not')
-        toks = utils.get_tokenized_lemmas(s)
-        # filter(lambda (i, t): t == 'not', enumerate(toks))
-
     def neg(self, claim, headline):
-        is_negated = False
-        # for c_word in claim.lower().spli():
-        #     for h_word in headline.lower().split():
-        #         #check whether negation
-        return is_negated
+        c_neg = False
+        h_neg = False
+
+        if "not" in claim or "n't" in claim:
+            c_neg = True
+        if "not" in headline or "n't" in headline:
+            h_neg = True
+        return c_neg and h_neg
 
 #PPDB Priya
     def get_ppdb_feature(self, claim, headline):
@@ -235,7 +199,7 @@ class FeatureExtraction():
                 bow = self.get_BoW_feature( claim, headline, bag)
                 q = self.get_question_feature( claim, headline)
                 root_dist = self.rootDist(headline)
-                # neg = self.neg(claim,headline)
+                neg = self.neg(claim,headline)
                 ppdb = self.get_ppdb_feature(claim,headline)
                 svo = self.get_svo_feature(claim, headline)
                 #word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
@@ -257,10 +221,3 @@ class ClaimKFold(_BaseKFold):
 
     def __len__(self):
         return self.n_folds
-
-logger = Logger(show = True, html_output = True, config_file = "config.txt")
-fe = FeatureExtraction(logger)
-minD = fe.rootDist("20-Year-Old Quarter Pounder Looks About the Same")
-#svo = fe.get_svo_feature("Barack Obama was born in Hawaii", "He was on drugs")
-#neg = fe.neg("a","b")
-#w2v = fe.get_word2vec_cosine_similarity("Barack Obama was born in Hawaii", "He was on drugs")
