@@ -31,11 +31,11 @@ class FeatureExtraction():
         wordsHeadline_cleaned = [w.lower() for w in wordsHeadline]
         wordsHeadline_cleaned = sorted(list(set(wordsHeadline_cleaned)))
 
-
+        result = [0 for i in range(len(bag))]
         for hw in wordsHeadline_cleaned:
             for i, cw in enumerate(bag):
                 if hw == cw:
-                    bag[i] += 1
+                    result[i] += 1
 
         self.logger.log("Feature Bag of Words completed.")
         return np.array(bag)
