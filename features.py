@@ -65,7 +65,7 @@ class FeatureExtraction():
         my_depen = []
         words_to_check = set(headline.lower().split()).intersection(self.rootDistWords)
         indexed_headline = {word:index+1 for index,word in enumerate(headline.lower().split())}
-        doc = self.nlp(headline)
+        doc = self.nlp(headline.lower())
         for dep_edge in doc.sentences[0].dependencies:
             my_depen.append((dep_edge[0].text + "-" + dep_edge[0].index, dep_edge[2].text + "-" + dep_edge[2].index))
 
@@ -74,14 +74,15 @@ class FeatureExtraction():
         root_dists = []
         for target in words_to_check:
             target_node = target + "-" + str(indexed_headline[target])
-            root_dists.append(nx.shortest_path_length(graph, source='ROOT-0', target=target_node))
+            try:
+                root_dists.append(nx.shortest_path_length(graph, source='ROOT-0', target=target_node))
+            except nx.NodeNotFound:
+                continue
         if root_dists:
             root_dist = min(root_dists)
         return root_dist
 
-    #################################################################
-    # Neg Zhang
-    #################################################################
+
     def neg(self,claim,headline):
         count = 0
         #cId, aId = '4893f040-a5c6-11e4-aa4f-ff16e52e0d56', '53faf1e0-a5c6-11e4-aa4f-ff16e52e0d56'
@@ -116,6 +117,12 @@ class FeatureExtraction():
         toks = utils.get_tokenized_lemmas(s)
         # filter(lambda (i, t): t == 'not', enumerate(toks))
 
+    def neg(self, claim, headline):
+        is_negated = False
+        # for c_word in claim.lower().spli():
+        #     for h_word in headline.lower().split():
+        #         #check whether negation
+        return is_negated
 
 #PPDB Priya
     def get_ppdb_feature(self, claim, headline):
@@ -251,9 +258,9 @@ class ClaimKFold(_BaseKFold):
     def __len__(self):
         return self.n_folds
 
-#logger = Logger(show = True, html_output = True, config_file = "config.txt")
-#fe = FeatureExtraction(logger)
-# minD = fe.rootDist("Barack Obama was born in Hawaii")
+logger = Logger(show = True, html_output = True, config_file = "config.txt")
+fe = FeatureExtraction(logger)
+minD = fe.rootDist("20-Year-Old Quarter Pounder Looks About the Same")
 #svo = fe.get_svo_feature("Barack Obama was born in Hawaii", "He was on drugs")
 #neg = fe.neg("a","b")
 #w2v = fe.get_word2vec_cosine_similarity("Barack Obama was born in Hawaii", "He was on drugs")
