@@ -24,7 +24,7 @@ class FeatureExtraction():
         self.ppdbLines = utils.load_ppdb_data()
         #self.word2vecModel = KeyedVectors.load_word2vec_format(self.logger.config_dict['GOOGLE_NEWS_VECTOR_FILE'], binary=True)
         #self.word2vecModel = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True)
-        # self.rootDistWords = utils.get_rootDist_words()
+        self.rootDistWords = utils.get_rootDist_words()
         self.svoMapping = {
             "equivalence" : 0,
             "forwardEntailment" : 1,
@@ -212,7 +212,7 @@ class FeatureExtraction():
                 h_word = svoDict[1][svo]
                 if self.ppdbLines.get(c_word) != None:
                     tuples = [tup for tup in self.ppdbLines.get(c_word) if tup[0] == h_word]
-                label.append(self.svoMapping(tuples[0][2]))
+                label.append(self.svoMapping[tuples[0][2]])
             except (KeyError, IndexError, UnboundLocalError,IndexError):
                 label.append(self.svoMapping["noRelation"])
                 continue
@@ -240,12 +240,13 @@ class FeatureExtraction():
                 article = data_dict[claimId]["articles"][articleId]
                 stance = article[1]
                 headline = article[0]
+                #print(headline)
                 claim = data_dict[claimId]["claim"]
 
                 #get all the features for the claim and headline
                 bow = self.get_BoW_feature( claim, headline, bag)
                 q = self.get_question_feature( claim, headline)
-                root_dist = self.rootDist(self,headline)
+                #root_dist = self.rootDist(headline)
                 # neg = self.neg(claim,headline)
                 ppdb = self.get_ppdb_feature(claim,headline)
                 svo = self.get_svo_feature(claim, headline)
@@ -267,7 +268,7 @@ class ClaimKFold(_BaseKFold):
     def __len__(self):
         return self.n_folds
 
-logger = Logger(show = True, html_output = True, config_file = "config.txt")
-fe = FeatureExtraction(logger)
+#logger = Logger(show = True, html_output = True, config_file = "config.txt")
+#fe = FeatureExtraction(logger)
 # minD = fe.rootDist("Barack Obama was born in Hawaii")
-svo = fe.get_svo_feature("Barack Obama was born in Hawaii", "He was on drugs")
+#svo = fe.get_svo_feature("Barack Obama was born in Hawaii", "He was on drugs")

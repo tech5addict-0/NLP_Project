@@ -27,10 +27,12 @@ with open('datasets/dataset.json','r') as json_file:
 
 # Save features
 #featuresDataset.to_csv("datasets/features.csv")
+#featuresDataset.rename(columns = {str(len(featuresDataset.columns)-2):"claimId"} ,inplace=True)
+#featuresDataset.to_csv("datasets/features2.csv")
 
 # load features:
 featuresDataset = pd.read_csv("datasets/features.csv")
-print(str(len(featuresDataset.columns)-2))
+#print(str(len(featuresDataset.columns)-2))
 featuresDataset.rename(columns = {str(len(featuresDataset.columns)-2):"claimId"} ,inplace=True)
 print(featuresDataset.columns)
 
@@ -82,10 +84,32 @@ indexValid = list(range(len(trainingLabels),len(trainingLabels)+len(validationLa
 
 accuracy = []
 indexName = []
-# =========== LOGISTIC CLASSIFIER =============
 
+
+# ========== Baseline Classifier ==========
+print("baseline training...")
+nameClassifier = "BaselineClassifier"
+baseClassifier = baselineClassifier.BaselineClassifier()
+trainedClassifier = baseClassifier.get_overlaps(utils.get_subset_dataset(dataset, trainingClaimSet))
+thresholds = baseClassifier.calculate_classifier_thresholds(trainedClassifier)
+# get the predicted labels
+testingData = baseClassifier.get_overlaps(utils.get_subset_dataset(dataset, testingClaimSet))
+#print(testingData)
+#print(thresholds)
+predLabels = baseClassifier.predict(thresholds,testingData)
+
+# Get the metrics and save them
+acc = utils.getAllMetricsAndSave(nameClassifier,predLabels,testingLabels)
+
+# Accuracy
+accuracy.append(acc)
+indexName.append(nameClassifier)
+
+
+# =========== LOGISTIC CLASSIFIER =============
+print("Logistic training...")
 nameClassifier = "LogisticClassifier"
-logisticClass = LogisticRegression(solver='lbfgs',multi_class="auto").fit(trainingFeatures, trainingLabels)
+logisticClass = LogisticRegression(solver='lbfgs',multi_class="auto",max_iter=2000).fit(gridFeatures, gridLabels)
 
 # get the predicted labels
 predLabels = logisticClass.predict(testingFeatures)
@@ -99,14 +123,40 @@ indexName.append(nameClassifier)
 
 
 # =========== SVM ==============
+print("SVM training...")
 nameClassifier = "SVM"
 svc = svm.SVC(gamma="auto")
 #params = {"kernel":("linear","poly","rbf","sigmoid"), 'C':[i/2 for i in range(1,20)]}
 params = {"kernel":("linear",), 'C':[i/2 for i in range(1,2)]}
-ps = sklearn.model_selection.PredefinedSplit(indexValid)
-clf = sklearn.model_selection.GridSearchCV(svc,params,cv=ps)
-clf.fit(gridFeatures,gridLabels)
+#ps = sklearn.model_selection.PredefinedSplit(indexValid)
+#clf = sklearn.model_selection.GridSearchCV(svc,params,cv=ps)
+#clf.fit(gridFeatures,gridLabels)
 
+# Grid search
+kern = ["rbf"]
+cList = [1,10,100,1000]
+bestKern = -1
+bestc = -1
+bestResult = -1
+for k in kern:
+   for c in cList:
+      print(k,c)
+      clf = svm.SVC(gamma="auto",kernel=k,C=c)
+      print("starting to fit...")
+      clf.fit(trainingFeatures,trainingLabels)
+      print("predicting...")
+      predLabels = clf.predict(validationFeatures)
+      confMat = metrics.getConfusionMatrix(predLabels,validationLabels)
+      acc = metrics.getAccuracy(confMat)
+
+      if acc > bestResult:
+         print("CHANGED !")
+         bestResult = acc
+         bestKern = k
+         bestc = c
+
+# Best performing one in term of accuracy
+clf = svm.SVC(gamma="auto",kernel=bestKern,C=bestc).fit(gridFeatures,gridLabels)
 print("done")
 
 # get the predicted labels
@@ -119,20 +169,6 @@ acc = utils.getAllMetricsAndSave(nameClassifier,predLabels,testingLabels)
 accuracy.append(acc)
 indexName.append(nameClassifier)
 
-# ========== Baseline Classifier ==========
-nameClassifier = "BaselineClassifier"
-baseClassifier = baselineClassifier.BaselineClassifier()
-trainedClassifier = baseClassifier.get_overlaps(trainingFeatures)
-thresholds = baseClassifier.calculate_classifier_thresholds(trainedClassifier)
-# get the predicted labels
-predLabels = baseClassifier.predict(thresholds,testingFeatures)
-
-# Get the metrics and save them
-acc = utils.getAllMetricsAndSave(nameClassifier,predLabels,testingLabels)
-
-# Accuracy
-accuracy.append(acc)
-indexName.append(nameClassifier)
 
 
 # Save data (the accuracy)

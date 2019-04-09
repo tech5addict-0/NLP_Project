@@ -1,6 +1,10 @@
+import utils
+import metrics
+
 import numpy as np
 import pandas as pd
 import json
+from sklearn import svm
 
 
 # We get the dataset
@@ -16,7 +20,7 @@ accuracyStd = []
 
 nbRun = 10
 # Define which columns represents each features
-nbColFeat = len(data) - 2
+nbColFeat = len(data) - 4
 svoCol = [nbColFeat - i for i in range(3)]
 ppdbCol = [nbColFeat - 3]
 qCol = [nbColFeat - 4]
@@ -66,10 +70,19 @@ for featToRemove in colPerFeat:
         testingLabels = np.ravel(testingLabels.values)
         
         
-        # Get accuracy of one specific classifier
-        classifier = 
-        # Save this into accuracy
+        # Get accuracy of one specific classifier (get the optimal params)
+        # YOU NEED TO KNOW THE OPTIMAL PARAMETERS DUMBASS
+        classifier = svm.SVC(gamma="auto")
+        classifier.fit(trainingFeatures,trainingLabels)
+        predLabels = classifier.predict(testingFeatures)
 
+        # Get confMatrix and accuracy:
+        confMat = metrics.getConfusionMatrix(predLabels,testingLabels)
+        acc = metrics.getAccuracy(confMat)
+        # Save this into accuracy
+        accuracy.append(acc)
+        
+        
     # Maybe reverse accuracy stuff
     # Get mean of accuracy
     accuracyMean.append(np.mean(accuracy))
@@ -77,6 +90,12 @@ for featToRemove in colPerFeat:
     accuracyStd.append(np.std(accuracy))
     # Reset accuracy
     accuracy = []
+
+# Save the ablation analysis
+featuresNames = ["BoW","q","ppdb","svo"]
+df = pd.Dataframe({"Accuracy Mean":accuracyMean, "Accuracy Std":accuracyStd, "Features":featuresNames})
+df.set_index("Features",inplace=True)
+df.to_csv("results/ablation.csv")
 
     
 

@@ -180,4 +180,9 @@ def get_rootDist_words():
     with open("hedgeWords.txt", 'r') as f:
         lines = f.readlines()
 
-
+def get_subset_dataset(dataset, trainingClaims):
+    result = {}
+    for claimId in dataset:
+        if claimId in trainingClaims:
+            result[claimId] = dataset[claimId]
+    return result
