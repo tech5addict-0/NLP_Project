@@ -178,6 +178,5 @@ def createBagTrain(data_dict):
 
 def get_rootDist_words():
     with open("hedgeWords.txt", 'r') as f:
-        lines = f.readlines()
-
+        return f.readlines()
 

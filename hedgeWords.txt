@@ -276,3 +276,48 @@ urge
 utter
 vow
 warn
+contradict
+counter
+disprove
+expose
+oppose
+quash
+rebut
+repudiate
+squelch
+abnegate
+break
+burn
+cancel
+confute
+contend
+contravene
+convict
+crush
+debate
+demolish
+disclaim
+dispute
+evert
+explode
+gainsay
+invalidate
+negate
+overthrow
+parry
+silence
+top
+argue against
+blow sky high
+burn down
+cancel out
+disconfirm
+dispose of
+give the lie to
+give thumbs down to
+reply to
+shoot down
+shoot full of holes
+show up
+take a stand against
+tear down

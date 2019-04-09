@@ -24,7 +24,8 @@ class FeatureExtraction():
         self.ppdbLines = utils.load_ppdb_data()
         #self.word2vecModel = KeyedVectors.load_word2vec_format(self.logger.config_dict['GOOGLE_NEWS_VECTOR_FILE'], binary=True)
         #self.word2vecModel = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True)
-        # self.rootDistWords = utils.get_rootDist_words()
+        rawWords = utils.get_rootDist_words()
+        self.rootDistWords = [word.strip() for word in rawWords]
         self.svoMapping = {
             "equivalence" : 0,
             "forwardEntailment" : 1,
@@ -60,44 +61,10 @@ class FeatureExtraction():
     def get_key(self,dict, value):
         return [k for k, v in dict.items() if v == value]
 
-    # RootDist Zhang
-    def rootDist_old(self, claim,headline,count):
-        df_clean_train = utils.get_dataset('url-versions-2015-06-14-clean-train.csv')
-        example = df_clean_train.ix[count, :]
-        dep_parse_data = utils.get_stanparse_data()
-        example_parse = dep_parse_data[example.articleId]
-        #print(corenlp.ParseTree(claim))
-        print(example_parse)
-        grph, grph_labels = utils.build_dep_graph(example_parse['sentences'][0]['dependencies'])
-        print("The grph is:", grph)
-        example_parse['sentences'][0]['dependencies']
-        print("The example_parse is", example_parse)
-        print("the grph_label is:", grph_labels)
-        key = FeatureExtraction.get_key(grph_labels,"neg")
-        print(len(key))
-        if(len(key)):
-            depth_key = key[0][0]
-        else:
-            depth_key = 0
-        dicta = utils.calc_depths(grph)
-        print("the root dist is:",dicta.get(depth_key))
-        #depths = get_stanparse_depths()
-        #d = depths['116a3920-c41c-11e4-883c-a7fa7a3c5066']
-        #print("the depths:", d)
-        #e = list(d.items())
-        #print(e[-1])
-        sp_data = utils.get_stanparse_data()
-
-        more_than_one_sentence = [v for v in sp_data.values() if len(v['sentences']) > 1]
-        u_depent = more_than_one_sentence[count]
-        print(u_depent['sentences'][0]['dependencies'])
-        print(more_than_one_sentence[count])
-
-        # WIP
-
     def rootDist(self, headline):
         my_depen = []
         words_to_check = set(headline.lower().split()).intersection(self.rootDistWords)
+        indexed_headline = {word:index+1 for index,word in enumerate(headline.lower().split())}
         doc = self.nlp(headline)
         for dep_edge in doc.sentences[0].dependencies:
             my_depen.append((dep_edge[0].text + "-" + dep_edge[0].index, dep_edge[2].text + "-" + dep_edge[2].index))
@@ -105,8 +72,9 @@ class FeatureExtraction():
         graph = nx.Graph(my_depen)
         root_dist = -1
         root_dists = []
-        # for target in words_to_check:
-        #     root_dists.append(nx.shortest_path_length(graph, source='ROOT-0', target=.*)
+        for target in words_to_check:
+            target_node = target + "-" + str(indexed_headline[target])
+            root_dists.append(nx.shortest_path_length(graph, source='ROOT-0', target=target_node))
         if root_dists:
             root_dist = min(root_dists)
         return root_dist
@@ -244,7 +212,7 @@ class FeatureExtraction():
                 #get all the features for the claim and headline
                 bow = self.get_BoW_feature( claim, headline, bag)
                 q = self.get_question_feature( claim, headline)
-                root_dist = self.rootDist(self,headline)
+                root_dist = self.rootDist(headline)
                 # neg = self.neg(claim,headline)
                 ppdb = self.get_ppdb_feature(claim,headline)
                 svo = self.get_svo_feature(claim, headline)
@@ -269,5 +237,5 @@ class ClaimKFold(_BaseKFold):
 
 logger = Logger(show = True, html_output = True, config_file = "config.txt")
 fe = FeatureExtraction(logger)
-# minD = fe.rootDist("Barack Obama was born in Hawaii")
-svo = fe.get_svo_feature("Barack Obama was born in Hawaii", "He was on drugs")
+#minD = fe.rootDist("Barack Obama was born in Hawaii")
+#svo = fe.get_svo_feature("Barack Obama was born in Hawaii", "He was on drugs")
