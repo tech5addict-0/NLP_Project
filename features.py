@@ -9,6 +9,7 @@ from sklearn.model_selection._split import _BaseKFold
 from nltk.parse.stanford import StanfordDependencyParser as sdp
 from nltk.parse.corenlp import CoreNLPDependencyParser
 from nltk.parse.dependencygraph import DependencyGraph
+from pntl.tools import Annotator
 
 import utils
 from logger import Logger
@@ -23,7 +24,16 @@ class FeatureExtraction():
         self.ppdbLines = utils.load_ppdb_data()
         #self.word2vecModel = KeyedVectors.load_word2vec_format(self.logger.config_dict['GOOGLE_NEWS_VECTOR_FILE'], binary=True)
         #self.word2vecModel = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True)
+        # self.rootDistWords = utils.get_rootDist_words()
+        self.svoMapping = {
+            "equivalence" : 0,
+            "forwardEntailment" : 1,
+            "backwardEntailment" : 3,
+            "independence" : 4,
+            "noRelation" : 5
+        }
         print("Done")
+
 
     def get_BoW_feature(self, claim, headline):
 
@@ -88,7 +98,23 @@ class FeatureExtraction():
         print(u_depent['sentences'][0]['dependencies'])
         print(more_than_one_sentence[count])
 
+        # WIP
 
+    def rootDist(self, headline):
+        my_depen = []
+        words_to_check = set(headline.lower().split()).intersection(self.rootDistWords)
+        doc = self.nlp(headline)
+        for dep_edge in doc.sentences[0].dependencies:
+            my_depen.append((dep_edge[0].text + "-" + dep_edge[0].index, dep_edge[2].text + "-" + dep_edge[2].index))
+
+        graph = nx.Graph(my_depen)
+        root_dist = -1
+        root_dists = []
+        # for target in words_to_check:
+        #     root_dists.append(nx.shortest_path_length(graph, source='ROOT-0', target=.*)
+        if root_dists:
+            root_dist = min(root_dists)
+        return root_dist
 
     #################################################################
     # Neg Zhang
@@ -191,9 +217,9 @@ class FeatureExtraction():
                 h_word = svoDict[1][svo]
                 if self.ppdbLines.get(c_word) != None:
                     tuples = [tup for tup in self.ppdbLines.get(c_word) if tup[0] == h_word]
-                label.append(tuples[0][2])
+                label.append(self.svoMapping(tuples[0][2]))
             except (KeyError, IndexError, UnboundLocalError,IndexError):
-                label.append("noRelation")
+                label.append(self.svoMapping["noRelation"])
                 continue
         return label
 
@@ -207,8 +233,7 @@ class FeatureExtraction():
         return utils.cosine_similarity_by_vector(claim_vector, headline_vector)
 
 
-
-    def compute_features2(self,data_dict):
+    def compute_features(self,data_dict):
         self.logger.log("Start computing features...")
         features = []
         count = 0
@@ -222,16 +247,16 @@ class FeatureExtraction():
                 #get all the features for the claim and headline
                 bow = self.get_BoW_feature( claim, headline)
                 q = self.get_question_feature( claim, headline)
-                #root_dist = self.rootDist(claim,headline,count)
+                root_dist = self.rootDist(self,headline)
                 # neg = self.neg(claim,headline)
                 ppdb = self.get_ppdb_feature(claim,headline)
                 svo = self.get_svo_feature(claim, headline)
                 #word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
                 #features.append([bow, q, root_dist, neg, ppdb, svo, word2vec_feature, stance, claimId])
-                features.append([bow, q,ppdb,svo, stance,claimId])
+                features.append([bow, q, root_dist, ppdb,svo, stance,claimId])
                 count = count + 1
         #colnames = ["BoW","Q","RootDist","Neg","PPDB","SVO","word2vec","stance", "claimId"]
-        colnames = ["BoW","Q","PPDB","SVO","stance", "claimId"]
+        colnames = ["BoW","Q","RootDist","PPDB","SVO","stance", "claimId"]
         self.logger.log("Finished computing features", show_time=True)
         return pd.DataFrame(features,columns = colnames)
 
@@ -245,3 +270,7 @@ class ClaimKFold(_BaseKFold):
     def __len__(self):
         return self.n_folds
 
+logger = Logger(show = True, html_output = True, config_file = "config.txt")
+fe = FeatureExtraction(logger)
+# minD = fe.rootDist("Barack Obama was born in Hawaii")
+svo = fe.get_svo_feature("Barack Obama was born in Hawaii", "He was on drugs")

@@ -163,4 +163,8 @@ def calculate_overlap(claim,headline):
     overlap = float(len(common_lemma) / len(union_lemma))
     return overlap
 
+def get_rootDist_words():
+    with open("hedgeWords.txt", 'r') as f:
+        lines = f.readlines()
+
 
