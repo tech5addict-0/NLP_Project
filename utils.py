@@ -26,7 +26,7 @@ def getLinesFromFile(filePath, fileOption ):
     return lines
 
 def load_ppdb_data():
-    with open("data/pickled/ppdb.pickle", 'rb') as f:
+    with open("pickled/ppdb.pickle", 'rb') as f:
         return pickle.load(f,encoding='latin1')
 
 def cosine_similarity_by_vector(vector1, vector2):
@@ -180,3 +180,9 @@ def get_rootDist_words():
     with open("hedgeWords.txt", 'r') as f:
         return f.readlines()
 
+def get_subset_dataset(dataset, trainingClaims):
+    result = {}
+    for claimId in dataset:
+        if claimId in trainingClaims:
+            result[claimId] = dataset[claimId]
+    return result

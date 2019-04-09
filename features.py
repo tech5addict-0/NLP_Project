@@ -180,7 +180,7 @@ class FeatureExtraction():
                 h_word = svoDict[1][svo]
                 if self.ppdbLines.get(c_word) != None:
                     tuples = [tup for tup in self.ppdbLines.get(c_word) if tup[0] == h_word]
-                label.append(self.svoMapping(tuples[0][2]))
+                label.append(self.svoMapping[tuples[0][2]])
             except (KeyError, IndexError, UnboundLocalError,IndexError):
                 label.append(self.svoMapping["noRelation"])
                 continue
@@ -216,10 +216,12 @@ class FeatureExtraction():
         count = 0
         bag = utils.createBagTrain(data_dict)
         for claimId in data_dict:
+            print(data_dict[claimId]["claim"])
             for articleId in data_dict[claimId]["articles"]:
                 article = data_dict[claimId]["articles"][articleId]
                 stance = article[1]
                 headline = article[0]
+                print(headline)
                 claim = data_dict[claimId]["claim"]
 
                 #get all the features for the claim and headline
@@ -229,14 +231,15 @@ class FeatureExtraction():
                 # neg = self.neg(claim,headline)
                 ppdb = self.get_ppdb_feature(claim,headline)
                 svo = self.get_svo_feature(claim, headline)
+                #word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
                 word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
                 #features.append([bow, q, root_dist, neg, ppdb, svo, word2vec_feature, stance, claimId])
-                features.append([bow, q, root_dist, ppdb,svo, word2vec_feature, stance,claimId])
+                features.append(list(bow) + [q,ppdb,root_dist] + list(svo) +[word2vec_feature] + [stance,claimId])
                 count = count + 1
         #colnames = ["BoW","Q","RootDist","Neg","PPDB","SVO","word2vec","stance", "claimId"]
-        colnames = ["BoW","Q","RootDist","PPDB","SVO", "word2vec","stance", "claimId"]
+        #colnames = ["BoW","Q","PPDB","SVO","stance", "claimId"]
         self.logger.log("Finished computing features", show_time=True)
-        return pd.DataFrame(features,columns = colnames)
+        return pd.DataFrame(features)
 
 class ClaimKFold(_BaseKFold):
     def __init__(self, data, n_folds=10, shuffle=False):
@@ -248,9 +251,9 @@ class ClaimKFold(_BaseKFold):
     def __len__(self):
         return self.n_folds
 
-logger = Logger(show = True, html_output = True, config_file = "config.txt")
-fe = FeatureExtraction(logger)
-minD = fe.rootDist("Would you take a bite out of the world's oldest burger? Men keep Quarter Pounder they bought 20 YEARS ago for a friend who never showed up to meet them")
+#logger = Logger(show = True, html_output = True, config_file = "config.txt")
+#fe = FeatureExtraction(logger)
+# minD = fe.rootDist("Barack Obama was born in Hawaii")
 #svo = fe.get_svo_feature("Barack Obama was born in Hawaii", "He was on drugs")
 #neg = fe.neg("a","b")
 #w2v = fe.get_word2vec_cosine_similarity("Barack Obama was born in Hawaii", "He was on drugs")

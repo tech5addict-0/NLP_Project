@@ -26,5 +26,8 @@ class BaselineClassifier():
         return thresholds
 
     def predict(self, thresholds, test_data):
-        predicted_labels = ["for" if overlap > thresholds["minFor"] else "against" if overlap <= thresholds["maxAgainst"] else "observing" for overlap in test_data]
+        column = test_data["overlap"]
+        #column = column.tolist()
+        #print(column)
+        predicted_labels = ["for" if float(overlap) > thresholds["minFor"] else "against" if float(overlap) <= thresholds["maxAgainst"] else "observing" for overlap in column]
         return predicted_labels
