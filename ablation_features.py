@@ -25,18 +25,19 @@ accuracyStd = []
 
 nbRun = 10
 # Define which columns represents each features
-nbColFeat = len(data.columns) - 4
-svoCol = [nbColFeat - i for i in range(-1,2)]
-ppdbCol = [nbColFeat - 2]
-qCol = [nbColFeat - 3]
-bowCol = [i for i in range(nbColFeat-3)]
+nbColFeat = len(data.columns) - 3
+print(data.columns[nbColFeat])
+svoCol = [nbColFeat - i for i in range(0,3)]
+ppdbCol = [nbColFeat - 3]
+qCol = [nbColFeat - 4]
+bowCol = [i for i in range(nbColFeat-4)]
 
 # Aggregate all this information into one array
 colPerFeat = [bowCol, qCol, ppdbCol, svoCol]
 
 # For all features to remove
 for featToRemove in colPerFeat:
-    colToSave = [i for i in range(nbColFeat+4) if i not in featToRemove]
+    colToSave = [i for i in range(len(data.columns)) if i not in featToRemove]
     newData = data.iloc[:,colToSave]
     print(newData[newData.columns[-8:-2]])
     print(newData.columns)

@@ -65,7 +65,7 @@ class FeatureExtraction():
         my_depen = []
         words_to_check = set(headline.lower().split()).intersection(self.rootDistWords)
         indexed_headline = {word:index+1 for index,word in enumerate(headline.lower().split())}
-        doc = self.nlp(headline)
+        doc = self.nlp(headline.lower())
         for dep_edge in doc.sentences[0].dependencies:
             my_depen.append((dep_edge[0].text + "-" + dep_edge[0].index, dep_edge[2].text + "-" + dep_edge[2].index))
 
