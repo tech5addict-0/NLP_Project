@@ -20,13 +20,19 @@ with open('datasets/dataset.json','r') as json_file:
 
 
 # Calculate the entire set of features
-logger = Logger(show = True, html_output = True, config_file = "config.txt")
-feature_extraction = features.FeatureExtraction(logger)
+#logger = Logger(show = True, html_output = True, config_file = "config.txt")
+#feature_extraction = features.FeatureExtraction(logger)
 #TODO if features are already calculated, read it from the directory instead
-featuresDataset = feature_extraction.compute_features(dataset)
+#featuresDataset = feature_extraction.compute_features(dataset)
 
 # Save features
-featuresDataset.to_csv("datasets/features.csv")
+#featuresDataset.to_csv("datasets/features.csv")
+
+# load features:
+featuresDataset = pd.read_csv("datasets/features.csv")
+print(str(len(featuresDataset.columns)-2))
+featuresDataset.rename(columns = {str(len(featuresDataset.columns)-2):"claimId"} ,inplace=True)
+print(featuresDataset.columns)
 
 
 # Cut in train, test, validation set
