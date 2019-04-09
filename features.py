@@ -25,19 +25,15 @@ class FeatureExtraction():
         #self.word2vecModel = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True)
         print("Done")
 
-    def get_BoW_feature(self, claim, headline):
-
-        wordsClaim = re.sub("[^\w]", " ", claim).split()
-        wordsClaim_cleaned = [w.lower() for w in wordsClaim]
-        wordsClaim_cleaned = sorted(list(set(wordsClaim_cleaned)))
+    def get_BoW_feature(self, claim, headline, bag):
 
         wordsHeadline = re.sub("[^\w]", " ", headline).split()
         wordsHeadline_cleaned = [w.lower() for w in wordsHeadline]
         wordsHeadline_cleaned = sorted(list(set(wordsHeadline_cleaned)))
 
-        bag = np.zeros(len(wordsClaim_cleaned))
+
         for hw in wordsHeadline_cleaned:
-            for i, cw in enumerate(wordsClaim_cleaned):
+            for i, cw in enumerate(bag):
                 if hw == cw:
                     bag[i] += 1
 
