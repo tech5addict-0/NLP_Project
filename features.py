@@ -79,14 +79,15 @@ class FeatureExtraction():
         return root_dist
 
     def neg(self, claim, headline):
-        c_neg = False
-        h_neg = False
+        c_neg = -1
+        h_neg = -1
 
         if "not" in claim or "n't" in claim:
-            c_neg = True
+            c_neg = 1
         if "not" in headline or "n't" in headline:
-            h_neg = True
-        return c_neg and h_neg
+            h_neg = 1
+        return c_neg * h_neg
+
 
 #PPDB Priya
     def get_ppdb_feature(self, claim, headline):
