@@ -2,6 +2,7 @@ import getData
 import features
 import metrics
 import utils
+import baselineClassifier
 
 from logger import Logger
 
@@ -21,6 +22,7 @@ with open('datasets/dataset.json','r') as json_file:
 # Calculate the entire set of features
 logger = Logger(show = True, html_output = True, config_file = "config.txt")
 feature_extraction = features.FeatureExtraction(logger)
+#TODO if features are already calculated, read it from the directory instead
 featuresDataset = feature_extraction.compute_features(dataset)
 
 
@@ -108,9 +110,20 @@ acc = utils.getAllMetricsAndSave(nameClassifier,predLabels,testingLabels)
 accuracy.append(acc)
 indexName.append(nameClassifier)
 
+# ========== Baseline Classifier ==========
+nameClassifier = "BaselineClassifier"
+baseClassifier = baselineClassifier.BaselineClassifier()
+trainedClassifier = baseClassifier.get_overlaps(trainingFeatures)
+thresholds = baseClassifier.calculate_classifier_thresholds(trainedClassifier)
+# get the predicted labels
+predLabels = baseClassifier.predict(thresholds,testingFeatures)
 
+# Get the metrics and save them
+acc = utils.getAllMetricsAndSave(nameClassifier,predLabels,testingLabels)
 
-
+# Accuracy
+accuracy.append(acc)
+indexName.append(nameClassifier)
 
 
 # Save data (the accuracy)
