@@ -38,7 +38,7 @@ class FeatureExtraction():
                     result[i] += 1
 
         self.logger.log("Feature Bag of Words completed.")
-        return np.array(bag)
+        return result
 
     def get_question_feature(self, claim, headline):
         if "?" in headline:
