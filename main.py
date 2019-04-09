@@ -20,13 +20,13 @@ with open('datasets/dataset.json','r') as json_file:
 
 
 # Calculate the entire set of features
-logger = Logger(show = True, html_output = True, config_file = "config.txt")
-feature_extraction = features.FeatureExtraction(logger)
+#logger = Logger(show = True, html_output = True, config_file = "config.txt")
+#feature_extraction = features.FeatureExtraction(logger)
 #TODO if features are already calculated, read it from the directory instead
-featuresDataset = feature_extraction.compute_features(dataset)
+#featuresDataset = feature_extraction.compute_features(dataset)
 
 # Save features
-featuresDataset.to_csv("datasets/features.csv")
+#featuresDataset.to_csv("datasets/features.csv")
 #featuresDataset.rename(columns = {str(len(featuresDataset.columns)-2):"claimId"} ,inplace=True)
 #featuresDataset.to_csv("datasets/features2.csv")
 
@@ -90,7 +90,7 @@ indexName = []
 print("baseline training...")
 nameClassifier = "BaselineClassifier"
 baseClassifier = baselineClassifier.BaselineClassifier()
-trainedClassifier = baseClassifier.get_overlaps(utils.get_subset_dataset(dataset, trainingClaimSet))
+trainedClassifier = baseClassifier.get_overlaps(utils.get_subset_dataset(dataset, trainingClaimSet+validationClaimSet))
 thresholds = baseClassifier.calculate_classifier_thresholds(trainedClassifier)
 # get the predicted labels
 testingData = baseClassifier.get_overlaps(utils.get_subset_dataset(dataset, testingClaimSet))
@@ -109,7 +109,7 @@ indexName.append(nameClassifier)
 # =========== LOGISTIC CLASSIFIER =============
 print("Logistic training...")
 nameClassifier = "LogisticClassifier"
-logisticClass = LogisticRegression(solver='lbfgs',multi_class="auto",max_iter=2000).fit(gridFeatures, gridLabels)
+logisticClass = LogisticRegression(solver='lbfgs',multi_class="auto",max_iter=3000).fit(gridFeatures, gridLabels)
 
 # get the predicted labels
 predLabels = logisticClass.predict(testingFeatures)

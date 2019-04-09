@@ -25,20 +25,24 @@ accuracyStd = []
 
 nbRun = 10
 # Define which columns represents each features
-nbColFeat = len(data.columns) - 4
-svoCol = [nbColFeat - i for i in range(-1,2)]
-ppdbCol = [nbColFeat - 2]
-qCol = [nbColFeat - 3]
-bowCol = [i for i in range(nbColFeat-3)]
+nbColFeat = len(data.columns) - 3
+print(data.columns[nbColFeat])
+word2VecCol = [nbColFeat]
+svoCol = [nbColFeat - i for i in range(1,4)]
+rootDistCol = [nbColFeat - 4]
+ppdbCol = [nbColFeat - 5]
+qCol = [nbColFeat - 6]
+bowCol = [i for i in range(nbColFeat-6)]
+allCol = []
 
 # Aggregate all this information into one array
-colPerFeat = [bowCol, qCol, ppdbCol, svoCol]
+colPerFeat = [bowCol, qCol, ppdbCol, rootDistCol, svoCol, word2VecCol, allCol]
 
 # For all features to remove
 for featToRemove in colPerFeat:
-    colToSave = [i for i in range(nbColFeat+4) if i not in featToRemove]
+    colToSave = [i for i in range(len(data.columns)) if i not in featToRemove]
     newData = data.iloc[:,colToSave]
-    print(newData[newData.columns[-8:-2]])
+    #print(newData[newData.columns[-8:-2]])
     print(newData.columns)
     
     # For all the runs
@@ -83,7 +87,7 @@ for featToRemove in colPerFeat:
         
         # Get accuracy of one specific classifier (get the optimal params)
         # YOU NEED TO KNOW THE OPTIMAL PARAMETERS DUMBASS
-        logisticClass = LogisticRegression(solver='lbfgs',multi_class="auto",max_iter=500).fit(gridFeatures, gridLabels)
+        logisticClass = LogisticRegression(solver='lbfgs',multi_class="auto",max_iter=250).fit(gridFeatures, gridLabels)
         predLabels = logisticClass.predict(testingFeatures)
 
         # Get confMatrix and accuracy:
@@ -102,7 +106,7 @@ for featToRemove in colPerFeat:
     accuracy = []
 
 # Save the ablation analysis
-featuresNames = ["BoW","q","ppdb","svo"]
+featuresNames = ["BoW","q","ppdb","rootDist","svo","word2Vec","all"]
 df = pd.DataFrame.from_dict({"Accuracy Mean":accuracyMean, "Accuracy Std":accuracyStd, "Features":featuresNames})
 df.set_index("Features",inplace=True)
 df.to_csv("results/ablation.csv")
