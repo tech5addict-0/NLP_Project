@@ -204,10 +204,11 @@ class FeatureExtraction():
 
 
 
-    def compute_features2(self,data_dict):
+    def compute_features(self,data_dict):
         self.logger.log("Start computing features...")
         features = []
         count = 0
+        bag = utils.createBagTrain(data_dict)
         for claimId in data_dict:
             for articleId in data_dict[claimId]["articles"]:
                 article = data_dict[claimId]["articles"][articleId]
@@ -216,7 +217,7 @@ class FeatureExtraction():
                 claim = data_dict[claimId]["claim"]
 
                 #get all the features for the claim and headline
-                bow = self.get_BoW_feature( claim, headline)
+                bow = self.get_BoW_feature( claim, headline, bag)
                 q = self.get_question_feature( claim, headline)
                 #root_dist = self.rootDist(claim,headline,count)
                 # neg = self.neg(claim,headline)
