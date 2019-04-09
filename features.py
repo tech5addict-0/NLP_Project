@@ -22,8 +22,8 @@ class FeatureExtraction():
         self.logger = logger
         self.stanfordParseData = utils.get_stanparse_data()
         self.nlp = stanfordnlp.Pipeline()
-        #self.ppdbLines = utils.load_ppdb_data()
-        #self.word2vecModel = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True, limit=500000)
+        self.ppdbLines = utils.load_ppdb_data()
+        self.word2vecModel = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True, limit=500000)
         rawWords = utils.get_rootDist_words()
         self.rootDistWords = [word.strip() for word in rawWords]
         self.svoMapping = {
@@ -187,7 +187,7 @@ class FeatureExtraction():
                 h_word = svoDict[1][svo]
                 if self.ppdbLines.get(c_word) != None:
                     tuples = [tup for tup in self.ppdbLines.get(c_word) if tup[0] == h_word]
-                label.append(self.svoMapping(tuples[0][2]))
+                label.append(self.svoMapping[tuples[0][2]])
             except (KeyError, IndexError, UnboundLocalError,IndexError):
                 label.append(self.svoMapping["noRelation"])
                 continue
@@ -223,10 +223,12 @@ class FeatureExtraction():
         count = 0
         bag = utils.createBagTrain(data_dict)
         for claimId in data_dict:
+            print(data_dict[claimId]["claim"])
             for articleId in data_dict[claimId]["articles"]:
                 article = data_dict[claimId]["articles"][articleId]
                 stance = article[1]
                 headline = article[0]
+                print(headline)
                 claim = data_dict[claimId]["claim"]
 
                 #get all the features for the claim and headline
@@ -236,14 +238,15 @@ class FeatureExtraction():
                 # neg = self.neg(claim,headline)
                 ppdb = self.get_ppdb_feature(claim,headline)
                 svo = self.get_svo_feature(claim, headline)
+                #word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
                 word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
                 #features.append([bow, q, root_dist, neg, ppdb, svo, word2vec_feature, stance, claimId])
-                features.append([bow, q, root_dist, ppdb,svo, word2vec_feature, stance,claimId])
+                features.append(list(bow) + [q,ppdb,root_dist] + list(svo) +[word2vec_feature] + [stance,claimId])
                 count = count + 1
         #colnames = ["BoW","Q","RootDist","Neg","PPDB","SVO","word2vec","stance", "claimId"]
-        colnames = ["BoW","Q","RootDist","PPDB","SVO", "word2vec","stance", "claimId"]
+        #colnames = ["BoW","Q","PPDB","SVO","stance", "claimId"]
         self.logger.log("Finished computing features", show_time=True)
-        return pd.DataFrame(features,columns = colnames)
+        return pd.DataFrame(features)
 
 class ClaimKFold(_BaseKFold):
     def __init__(self, data, n_folds=10, shuffle=False):

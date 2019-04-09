@@ -141,9 +141,9 @@ def preprocessDataset(dataset):
         #print(dataset[claimId])
         #preprocessString(dataset[claimId]['claim'])
 
-        print("ATTATAT")
-        print("Claim : " + dataset[claimId]['claim'])
-        print("Claim Id : " + str(claimId))
+        #print("ATTATAT")
+        #print("Claim : " + dataset[claimId]['claim'])
+        #print("Claim Id : " + str(claimId))
         
         # We process the claim
         dataset[claimId]['claim'] = preprocessString(dataset[claimId]["claim"])
@@ -178,16 +178,16 @@ stopWordSet = set(nltk.corpus.stopwords.words('english'))
 
 
 #We read the data
-with open('datasets/dataset.json','r') as json_file:  
-   data = json.load(json_file)
+#with open('datasets/dataset.json','r') as json_file:  
+#   data = json.load(json_file)
 
 # test stuff
-print(len(data))
-print("\n\n")
-(train, val, test) = cutTrainTestValidationSet(data, 0.5, 0.2)
-print(len(train))
-print(len(val))
-print(len(test))
+#print(len(data))
+#print("\n\n")
+#(train, val, test) = cutTrainTestValidationSet(data, 0.5, 0.2)
+#print(len(train))
+#print(len(val))
+#print(len(test))
 
 #preprocessDataset(data)
 
