@@ -208,7 +208,7 @@ class FeatureExtraction():
                 article = data_dict[claimId]["articles"][articleId]
                 stance = article[1]
                 headline = article[0]
-                #print(headline)
+                print(headline)
                 claim = data_dict[claimId]["claim"]
 
                 #get all the features for the claim and headline
