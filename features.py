@@ -206,7 +206,7 @@ class FeatureExtraction():
                 #word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
                 word2vec_feature = self.get_word2vec_cosine_similarity(claim, headline)
                 #features.append([bow, q, root_dist, neg, ppdb, svo, word2vec_feature, stance, claimId])
-                features.append(list(bow) + [q,ppdb,root_dist] + list(svo) +[word2vec_feature] + [stance,claimId])
+                features.append(list(bow) + [neg,q,ppdb,root_dist] + list(svo) +[word2vec_feature] + [stance,claimId])
                 count = count + 1
         #colnames = ["BoW","Q","RootDist","Neg","PPDB","SVO","word2vec","stance", "claimId"]
         #colnames = ["BoW","Q","PPDB","SVO","stance", "claimId"]
