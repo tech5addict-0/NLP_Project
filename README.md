@@ -13,12 +13,14 @@ Team members:
 python=3.7.2
 
 # Create the environment
-```conda create -n nlpGroup python=3.7.2
+```
+conda create -n nlpGroup python=3.7.2
 conda activate nlpGroup
 ```
 
 # Set up environment and install packages
-```conda install -c anaconda nltk
+```
+conda install -c anaconda nltk
 pip install scikit-multilearn
 pip install stanfordnlp 
 ```
