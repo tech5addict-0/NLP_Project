@@ -29,5 +29,4 @@ pip install nltk
 ```
 python main.py 
 ```
-You need to obtain [Emergent dataset](https://
-github.com/willferreira/mscproject), [PPDB 2.0 database](http://paraphrase.org/#/) and the [Google news Dataset](https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM/edit) as described in the paper and copy it to data folder and run the main.py file
+You need to obtain [Emergent dataset](https://github.com/willferreira/mscproject), [PPDB 2.0 database](http://paraphrase.org/#/) and the [Google news Dataset](https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM/edit) as described in the paper and copy it to data folder and run the main.py file
