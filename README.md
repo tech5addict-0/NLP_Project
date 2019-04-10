@@ -20,9 +20,9 @@ conda activate nlpGroup
 
 # Set up environment and install packages
 ```
-conda install -c anaconda nltk
 pip install scikit-multilearn
-pip install stanfordnlp 
+pip install stanfordnlp
+pip install nltk
 ```
 
 # Run 
