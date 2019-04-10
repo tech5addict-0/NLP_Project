@@ -32,11 +32,12 @@ svoCol = [nbColFeat - i for i in range(1,4)]
 rootDistCol = [nbColFeat - 4]
 ppdbCol = [nbColFeat - 5]
 qCol = [nbColFeat - 6]
-bowCol = [i for i in range(nbColFeat-6)]
+negCol = [nbColFeat - 7]
+bowCol = [i for i in range(nbColFeat-7)]
 allCol = []
 
 # Aggregate all this information into one array
-colPerFeat = [bowCol, qCol, ppdbCol, rootDistCol, svoCol, word2VecCol, allCol]
+colPerFeat = [bowCol, negCol, qCol, ppdbCol, rootDistCol, svoCol, word2VecCol, allCol]
 
 # For all features to remove
 for featToRemove in colPerFeat:
@@ -106,7 +107,7 @@ for featToRemove in colPerFeat:
     accuracy = []
 
 # Save the ablation analysis
-featuresNames = ["BoW","q","ppdb","rootDist","svo","word2Vec","all"]
+featuresNames = ["BoW","neg","q","ppdb","rootDist","svo","word2Vec","all"]
 df = pd.DataFrame.from_dict({"Accuracy Mean":accuracyMean, "Accuracy Std":accuracyStd, "Features":featuresNames})
 df.set_index("Features",inplace=True)
 df.to_csv("results/ablation.csv")
